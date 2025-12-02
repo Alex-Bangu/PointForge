@@ -52,15 +52,69 @@ if (process.env.DATABASE_URL) {
 }
 
 // Run prisma db push with the normalized DATABASE_URL
-try {
-    console.log('Running prisma db push...');
-    execSync('npx prisma db push --skip-generate --accept-data-loss', {
-        stdio: 'inherit',
-        env: process.env
-    });
-    console.log('Database schema initialized successfully');
-} catch (error) {
-    console.error('Error initializing database schema:', error.message);
-    process.exit(1);
-}
+(async () => {
+    try {
+        console.log('Running prisma db push...');
+        execSync('npx prisma db push --skip-generate --accept-data-loss', {
+            stdio: 'inherit',
+            env: process.env
+        });
+        console.log('Database schema initialized successfully');
+        
+        // Check if database has any users by querying it
+        const { PrismaClient } = require('@prisma/client');
+        const prisma = new PrismaClient();
+        
+        try {
+            const userCount = await prisma.user.count();
+            console.log(`Found ${userCount} users in database`);
+            console.log(`SEED_DATABASE environment variable: ${process.env.SEED_DATABASE || 'not set'}`);
+            
+            if (userCount === 0 && process.env.SEED_DATABASE === 'true') {
+                console.log('Database is empty and SEED_DATABASE=true, running seed script...');
+                console.log(`Using DATABASE_URL: ${process.env.DATABASE_URL}`);
+                try {
+                    execSync('node prisma/seed.mjs', {
+                        stdio: 'inherit',
+                        env: process.env,
+                        cwd: process.cwd()
+                    });
+                    
+                    // Verify users were created
+                    const newUserCount = await prisma.user.count();
+                    if (newUserCount > 0) {
+                        console.log(`✅ Database seeded successfully! Created ${newUserCount} users.`);
+                        console.log('Test users created. Login with:');
+                        console.log('  Superuser: utorid=supersu1, password=Password123!');
+                        console.log('  Manager: utorid=manager1, password=Password123!');
+                        console.log('  Regular: utorid=reguser1, password=Password123!');
+                    } else {
+                        console.error('❌ Seed script completed but no users were created!');
+                        console.error('This might indicate the seed script failed silently.');
+                    }
+                } catch (seedError) {
+                    console.error('❌ Seed script failed:', seedError.message);
+                    console.error('Full error:', seedError);
+                    console.error('You can create a user manually using: node prisma/createsu.js <utorid> <email> <password>');
+                }
+            } else if (userCount === 0) {
+                console.log('');
+                console.log('⚠️  Database is empty (no users found). To seed with test data:');
+                console.log('   1. Set SEED_DATABASE=true in Railway environment variables');
+                console.log('   2. Redeploy the service');
+                console.log('');
+                console.log('   Or create a user manually:');
+                console.log('   node prisma/createsu.js <utorid> <email> <password>');
+                console.log('   Or register through the frontend registration page');
+            }
+        } catch (checkError) {
+            console.warn('Could not check user count:', checkError.message);
+        } finally {
+            await prisma.$disconnect();
+        }
+    } catch (error) {
+        console.error('Error initializing database schema:', error.message);
+        process.exit(1);
+    }
+})();
 
