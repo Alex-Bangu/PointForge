@@ -185,7 +185,7 @@ router.post("/resets", async (req, res) => {
             }
         });
 
-        const resetLink = "https://pointforge-production-c592.up.railway.app/login/" + uuid;
+        const resetLink = process.env.FRONTEND_URL + "/login/" + uuid;
         const htmlContent = generateResetHTML(resetLink);
         await sendReset(email, htmlContent);
 
