@@ -35,33 +35,46 @@ const path = require('path');
 
 if (process.env.DATABASE_URL) {
     const originalDbUrl = process.env.DATABASE_URL.trim();
+    console.log(`Original DATABASE_URL: "${originalDbUrl}"`);
     let dbUrl = originalDbUrl;
     
-    // If DATABASE_URL doesn't start with 'file:', normalize it
-    if (!dbUrl.startsWith('file:')) {
-        // Check if it's already a file path (ends with .db) or just a directory
-        let dbPath = dbUrl;
-        if (!dbPath.endsWith('.db') && !dbPath.endsWith('.sqlite') && !dbPath.endsWith('.sqlite3')) {
-            // It's a directory, append database filename
-            dbPath = path.join(dbUrl, 'database.db');
-        }
-        // Ensure absolute path (handle relative paths)
-        if (!path.isAbsolute(dbPath)) {
-            dbPath = path.resolve(dbPath);
-        }
-        // Use file:/// format for absolute paths (three slashes)
-        // file:/// for absolute paths, file:./ for relative paths
-        if (path.isAbsolute(dbPath)) {
-            dbUrl = `file://${dbPath}`;
-        } else {
-            dbUrl = `file:${dbPath}`;
-        }
-        process.env.DATABASE_URL = dbUrl;
-        console.log(`Normalized DATABASE_URL from "${originalDbUrl}" to: ${dbUrl}`);
+    // Extract the path part (remove file: prefix if present)
+    let dbPath = dbUrl.replace(/^file:\/\//, '').replace(/^file:/, '');
+    console.log(`Extracted dbPath: "${dbPath}"`);
+    
+    // Check if it's already a file path (ends with .db) or just a directory
+    const hasDbExtension = dbPath.endsWith('.db') || dbPath.endsWith('.sqlite') || dbPath.endsWith('.sqlite3');
+    console.log(`Has database extension? ${hasDbExtension}`);
+    
+    if (!hasDbExtension) {
+        // It's a directory, append database filename
+        dbPath = path.join(dbPath, 'database.db');
+        console.log(`Appended database.db, new dbPath: "${dbPath}"`);
     }
     
+    // Ensure absolute path (handle relative paths)
+    if (!path.isAbsolute(dbPath)) {
+        dbPath = path.resolve(dbPath);
+        console.log(`Resolved to absolute path: "${dbPath}"`);
+    }
+    
+    // Use file:/// format for absolute paths (three slashes after file:)
+    // For SQLite: file:///absolute/path or file:./relative/path
+    if (path.isAbsolute(dbPath)) {
+        dbUrl = `file://${dbPath}`;
+    } else {
+        dbUrl = `file:${dbPath}`;
+    }
+    
+    if (dbUrl !== originalDbUrl) {
+        process.env.DATABASE_URL = dbUrl;
+        console.log(`Normalized DATABASE_URL from "${originalDbUrl}" to: ${dbUrl}`);
+    } else {
+        console.log(`DATABASE_URL already normalized: ${dbUrl}`);
+    }
+    
+    // dbPath is already normalized above, use it for directory creation and logging
     // Ensure database directory exists
-    const dbPath = dbUrl.replace(/^file:\/\/?/, '');
     const dbDir = path.dirname(dbPath);
     if (dbDir && dbDir !== '.' && !fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });
@@ -70,6 +83,10 @@ if (process.env.DATABASE_URL) {
     
     console.log(`Database will be stored at: ${dbPath}`);
     console.log(`Final DATABASE_URL: ${process.env.DATABASE_URL}`);
+    
+    // Force Prisma to re-read the DATABASE_URL by deleting any cached Prisma Client modules
+    // This ensures Prisma uses the normalized URL
+    delete require.cache[require.resolve('@prisma/client')];
 }
 
 const express = require("express");
