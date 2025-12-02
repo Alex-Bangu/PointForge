@@ -591,6 +591,7 @@ router.get('/me/transactions', auth, async (req, res) => {
     }
     const count = filteredTransactions.length;
     let toReturn = filteredTransactions.slice((page - 1) * limit, page * limit);
+    toReturn.reverse();
     let toReturnJson = [];
     for(let i = 0; i < toReturn.length; i++) {
         let data = {};
