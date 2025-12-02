@@ -29,16 +29,40 @@ const port = (() => {
     process.exit(1);
 })();
 
-// Ensure database directory exists for SQLite (important for Railway volumes)
+// Normalize DATABASE_URL for SQLite (important for Railway volumes)
 const fs = require('fs');
 const path = require('path');
-if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('file:')) {
-    const dbPath = process.env.DATABASE_URL.replace('file:', '');
+
+if (process.env.DATABASE_URL) {
+    const originalDbUrl = process.env.DATABASE_URL.trim();
+    let dbUrl = originalDbUrl;
+    
+    // If DATABASE_URL doesn't start with 'file:', normalize it
+    if (!dbUrl.startsWith('file:')) {
+        // Check if it's already a file path (ends with .db) or just a directory
+        let dbPath = dbUrl;
+        if (!dbPath.endsWith('.db') && !dbPath.endsWith('.sqlite') && !dbPath.endsWith('.sqlite3')) {
+            // It's a directory, append database filename
+            dbPath = path.join(dbUrl, 'database.db');
+        }
+        // Ensure absolute path (handle relative paths)
+        if (!path.isAbsolute(dbPath)) {
+            dbPath = path.resolve(dbPath);
+        }
+        dbUrl = `file:${dbPath}`;
+        process.env.DATABASE_URL = dbUrl;
+        console.log(`Normalized DATABASE_URL from "${originalDbUrl}" to: ${dbUrl}`);
+    }
+    
+    // Ensure database directory exists
+    const dbPath = dbUrl.replace(/^file:/, '');
     const dbDir = path.dirname(dbPath);
-    if (dbDir && !fs.existsSync(dbDir)) {
+    if (dbDir && dbDir !== '.' && !fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });
         console.log(`Created database directory: ${dbDir}`);
     }
+    
+    console.log(`Database will be stored at: ${dbPath}`);
 }
 
 const express = require("express");
