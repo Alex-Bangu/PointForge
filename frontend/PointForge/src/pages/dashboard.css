@@ -291,23 +291,43 @@
 }
 
 .manager-user-row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.manager-user-row-button {
     background-color: #015c42;
     border-radius: 10px;
     padding: 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    list-style: none;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.manager-user-row > div {
+.manager-user-row-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+    background-color: #016a4a;
+}
+
+.manager-user-row-button:active {
+    transform: translateY(0);
+}
+
+.manager-user-row-button > div {
     display: flex;
     flex-direction: column;
     gap: 4px;
     flex: 1;
 }
 
-.manager-user-row strong {
+.manager-user-row-button strong {
     color: white;
     margin: 0;
     font-size: 1rem;

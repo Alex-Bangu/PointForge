@@ -12,6 +12,7 @@ export function useManagerData(user) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const previousUserIdRef = useRef(null);
+    const refreshTriggerRef = useRef(0);
 
     const isManagerOrSuperuser = user?.role === 'manager' || user?.role === 'superuser';
 
@@ -114,13 +115,19 @@ export function useManagerData(user) {
         return () => {
             ignore = true;
         };
-    }, [user?.id, user?.role, isManagerOrSuperuser]);
+    }, [user?.id, user?.role, isManagerOrSuperuser, refreshTriggerRef.current]);
+
+    // Refresh function to manually trigger data refetch
+    const refresh = () => {
+        refreshTriggerRef.current += 1;
+    };
 
     return {
         userSummary,
         promotionsCount,
         activePromotions,
         error,
-        loading
+        loading,
+        refresh
     };
 }

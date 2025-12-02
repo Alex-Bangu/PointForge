@@ -181,10 +181,6 @@
     border-color: rgba(184, 134, 11, 0.5);
 }
 
-.promo-card--disabled {
-    opacity: 0.6;
-}
-
 .promo-card h3 {
     margin: 0;
     color: #fff;

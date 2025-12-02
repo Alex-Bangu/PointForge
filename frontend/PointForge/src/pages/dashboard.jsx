@@ -1,7 +1,7 @@
 import { UserContext } from "../contexts/UserContext.jsx"
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Event, Promotion, Transaction, EmptyState, Loading, Error, PromotionDetailModal, EventDetailModal, TransactionDetailModal } from "../components";
+import { Event, Promotion, Transaction, EmptyState, Loading, Error, PromotionDetailModal, EventDetailModal, TransactionDetailModal, UserDetailModal } from "../components";
 import { filterUpcoming, filterActive } from "../utils/dateUtils.js";
 import { useManagerData } from "../hooks/useManagerData.js";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
@@ -21,6 +21,8 @@ function Dashboard() {
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [transactionModalOpen, setTransactionModalOpen] = useState(false);
     const [selectedTransactionId, setSelectedTransactionId] = useState(null);
+    const [userModalOpen, setUserModalOpen] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState(null);
 
     const role = user?.role ?? 'regular';
     const isRegular = role === 'regular';
@@ -28,7 +30,7 @@ function Dashboard() {
     const isManagerOrSuperuser = role === 'manager' || role === 'superuser';
 
     // Use custom hook for manager data
-    const { userSummary, promotionsCount, activePromotions: managerActivePromotions, error: managerError, loading: managerLoading } = useManagerData(user);
+    const { userSummary, promotionsCount, activePromotions: managerActivePromotions, error: managerError, loading: managerLoading, refresh: refreshManagerData } = useManagerData(user);
 
     // Early returns AFTER all hooks
     if(loading) {
@@ -110,13 +112,21 @@ function Dashboard() {
         : (userSummary.flagged.length > 0
             ? userSummary.flagged.map((flaggedUser) => (
                 <li key={flaggedUser.id} className="manager-user-row">
-                    <div>
-                        <strong>{flaggedUser.name || flaggedUser.utorid}</strong>
-                        <p className="manager-user-subtitle">{flaggedUser.utorid}</p>
-                    </div>
-                    <span className={`status-pill ${flaggedUser.verified ? '' : 'status-pill--warning'}`}>
-                        {flaggedUser.role}
-                    </span>
+                    <button 
+                        className="manager-user-row-button"
+                        onClick={() => {
+                            setSelectedUserId(flaggedUser.id);
+                            setUserModalOpen(true);
+                        }}
+                    >
+                        <div>
+                            <strong>{flaggedUser.name || flaggedUser.utorid}</strong>
+                            <p className="manager-user-subtitle">{flaggedUser.utorid}</p>
+                        </div>
+                        <span className={`status-pill ${flaggedUser.verified ? '' : 'status-pill--warning'}`}>
+                            {flaggedUser.role}
+                        </span>
+                    </button>
                 </li>
             ))
             : <EmptyState message="No flagged users" />);
@@ -299,6 +309,20 @@ function Dashboard() {
                 onClose={() => {
                     setTransactionModalOpen(false);
                     setSelectedTransactionId(null);
+                }}
+            />
+            <UserDetailModal
+                userId={selectedUserId}
+                isOpen={userModalOpen}
+                onClose={() => {
+                    setUserModalOpen(false);
+                    setSelectedUserId(null);
+                }}
+                onUserUpdated={() => {
+                    // Refresh manager data when user is updated
+                    if (refreshManagerData) {
+                        refreshManagerData();
+                    }
                 }}
             />
         </div>

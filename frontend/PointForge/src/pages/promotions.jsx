@@ -121,7 +121,10 @@ function Promotions() {
                 }
                 
                 // Add status filter (including 'all' - this was fixed to work properly)
-                if(filters.status) {
+                // For regular users, always force 'active' status
+                if(isRegular) {
+                    params.set('status', 'active');
+                } else if(filters.status) {
                     params.set('status', filters.status);
                 }
                 
@@ -394,18 +397,17 @@ function Promotions() {
         // Determine if user can add this promotion to wallet (regular users + one-time promotions only)
         const canApply = isRegular && promotion.isOneTime;
         
-            // Determine if add to wallet button should be disabled
-            const applyDisabled = !promotion.usable || promotion.hasEnded || promotion.isUpcoming || promotion.alreadyUsed;
+        // Determine if add to wallet button should be disabled
+        const applyDisabled = !promotion.usable || promotion.hasEnded || promotion.isUpcoming || promotion.alreadyUsed;
 
-        // Determine if card should be greyed out (disabled styling)
-        // Cards are disabled if promotion is not usable, has ended, or is upcoming
-        const isDisabled = !promotion.usable || promotion.hasEnded || promotion.isUpcoming;
-        
         return (
-            <article key={promotion.id} className={`promo-card ${isDisabled ? 'promo-card--disabled' : ''}`}>
+            <article key={promotion.id} className="promo-card">
                 {/* Status and type badges at the top */}
                 <div className="card-badges">
-                    <span className={`promo-badge ${statusClass}`}>{promotion.status}</span>
+                    {/* Only show status badge for managers/superusers (regular users don't need it since all are active) */}
+                    {isManager && (
+                        <span className={`promo-badge ${statusClass}`}>{promotion.status}</span>
+                    )}
                     <span className="promo-badge type">{promotion.isOneTime ? t('promotions.typeOneTime') : t('promotions.typeAutomatic')}</span>
                 </div>
                 
@@ -488,14 +490,15 @@ function Promotions() {
                         value={filters.search}
                         onChange={(event) => handleFilterChange('search', event.target.value)}
                     />
-                    {/* Status filter: active, upcoming, ended, or all */}
-                    <select value={filters.status} onChange={(event) => handleFilterChange('status', event.target.value)}>
-                        <option value="active">{t('promotions.statusActive')}</option>
-                        <option value="upcoming">{t('promotions.statusUpcoming')}</option>
-                        <option value="ended">{t('promotions.statusEnded')}</option>
-                        {isRegular && <option value="in wallet">{t('promotions.statusInWallet')}</option>}
-                        <option value="all">{t('promotions.statusAll')}</option>
-                    </select>
+                    {/* Status filter: only show for managers/superusers */}
+                    {isManager && (
+                        <select value={filters.status} onChange={(event) => handleFilterChange('status', event.target.value)}>
+                            <option value="active">{t('promotions.statusActive')}</option>
+                            <option value="upcoming">{t('promotions.statusUpcoming')}</option>
+                            <option value="ended">{t('promotions.statusEnded')}</option>
+                            <option value="all">{t('promotions.statusAll')}</option>
+                        </select>
+                    )}
                     {/* Type filter: automatic, onetime, or all */}
                     <select value={filters.type} onChange={(event) => handleFilterChange('type', event.target.value)}>
                         <option value="all">{t('promotions.typeAll')}</option>

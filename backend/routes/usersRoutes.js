@@ -333,6 +333,8 @@ router.get("/:userId", auth, async (req, res) => {
         "createdAt": user.createdAt,
         "lastLogin": user.lastLogin,
         "verified": user.verified,
+        "suspicious": user.suspicious,
+        "activated": user.activated,
         "avatarUrl": user.avatarURL,
         "promotions": user.promotions
     });
@@ -356,7 +358,12 @@ router.patch("/:userId", auth, async (req, res) => {
     var toReturn = {"id": user.id, "utorid": user.utorid, "name": user.name};
 
     const {email, verified, suspicious, role} = req.body;
-    if(!email && !verified && !suspicious && !role) {
+    const hasEmail = email !== undefined && email !== null && email !== '';
+    const hasVerified = verified !== undefined && verified !== null;
+    const hasSuspicious = suspicious !== undefined && suspicious !== null;
+    const hasRole = role !== undefined && role !== null && role !== '';
+    
+    if(!hasEmail && !hasVerified && !hasSuspicious && !hasRole) {
         return res.status(400).json({"Message": "Bad request"});
     }
 
@@ -371,14 +378,21 @@ router.patch("/:userId", auth, async (req, res) => {
         });
         toReturn["email"] = email;
     }
-    if(verified) {
-        await prisma.user.update({
-            where: {id: user.id},
-            data: {verified: verified},
-        });
-        toReturn["verified"] = verified;
+    if(verified !== undefined && verified !== null) {
+        // Only allow setting verified to true (one-time action)
+        // Prevent unverifying users who are already verified
+        if(user.verified && !verified) {
+            return res.status(400).json({"Message": "Cannot unverify a user who is already verified"});
+        }
+        if(verified) {
+            await prisma.user.update({
+                where: {id: user.id},
+                data: {verified: true},
+            });
+            toReturn["verified"] = true;
+        }
     }
-    if(suspicious) {
+    if(suspicious !== undefined && suspicious !== null) {
         await prisma.user.update({
             where: {id: user.id},
             data: {suspicious: suspicious}
