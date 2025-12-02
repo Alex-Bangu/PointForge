@@ -169,7 +169,7 @@ router.post("/resets", async (req, res) => {
         }
     });
 
-    const resetLink = "http://localhost:5173/login/" + uuid;
+    const resetLink = "https://pointforge-production-c592.up.railway.app/login/" + uuid;
     const htmlContent = generateResetHTML(resetLink);
     await sendReset(email, htmlContent);
 
