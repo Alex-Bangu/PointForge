@@ -631,7 +631,6 @@ router.get('/me/transactions', auth, async (req, res) => {
             data["recipient"] = toReturn[i].receiver.utorid;
             data["sent"] = toReturn[i].amount;
         }
-        data.reverse()
         toReturnJson.push(data);
     }
     return res.status(200).json({"count": count, "results": toReturnJson});
