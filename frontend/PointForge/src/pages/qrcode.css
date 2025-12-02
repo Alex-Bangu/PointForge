@@ -1,0 +1,113 @@
+.qrcode-page {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    color: #ffffff;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.qrcode-header-section {
+    margin-bottom: 2.5rem;
+    display: inline-block;
+    width: fit-content;
+    background-color: #014530;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.qrcode-header-section:hover {
+    transform: translateY(-3px);
+}
+
+.qrcode-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.qrcode-title {
+    color: #B8860B;
+    margin: 0;
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.qrcode-subtitle {
+    color: #B0B0B0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.qrcode-content {
+    background: #014530;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.qrcode-info {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.qrcode-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.qrcode-info-label {
+    color: #b0b0b0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.qrcode-info-value {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.qrcode-instructions {
+    color: #d8d8d8;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .qrcode-page {
+        padding: 1rem;
+    }
+
+    .qrcode-content {
+        padding: 1.5rem;
+    }
+
+    .qrcode-title {
+        font-size: 1.75rem;
+    }
+
+    .qrcode-subtitle {
+        font-size: 0.9375rem;
+    }
+}
+

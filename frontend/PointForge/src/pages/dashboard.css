@@ -1,0 +1,406 @@
+.container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Welcome Section */
+.welcome-section {
+    margin-bottom: 2.5rem;
+    display: inline-block;
+    width: fit-content;
+    background-color: #014530;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.welcome-section:hover {
+    transform: translateY(-3px);
+}
+
+.welcome-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.welcome-title {
+    font-size: 2.25rem;
+    color: #B8860B;
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.welcome-subtitle {
+    color: #B0B0B0;
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Grid Layout: 2 rows, 3 columns */
+.gridLayout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto;
+    gap: 1.5rem;
+}
+
+/* Fade-in animations for grid items */
+.gridItem {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.gridItem:nth-child(1) { animation-delay: 0.1s; }
+.gridItem:nth-child(2) { animation-delay: 0.2s; }
+.gridItem:nth-child(3) { animation-delay: 0.3s; }
+.gridItem:nth-child(4) { animation-delay: 0.4s; }
+.gridItem:nth-child(5) { animation-delay: 0.5s; }
+.gridItem:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Overview Cards (Row 1) */
+.gridItem.overview-card {
+    background-color: #014530;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gridItem.overview-card:nth-child(1),
+.gridItem.overview-card:nth-child(2),
+.gridItem.overview-card:nth-child(3) {
+    background: linear-gradient(135deg, #014530 0%, #014228 100%);
+}
+
+.gridItem.overview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.overview-card .card-icon {
+    font-size: 3rem;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.overview-card .card-text {
+    flex: 1;
+}
+
+.overview-card .card-label {
+    font-size: 0.75rem;
+    color: #B0B0B0;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.overview-card .card-value {
+    font-size: 1.875rem;
+    color: #ffffff;
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Detail Sections (Row 2) */
+.gridItem.detail-section {
+    background-color: #014530;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 500px;
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header h2 {
+    color: #B8860B;
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.view-all-link {
+    color: #B8860B;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.view-all-link:hover {
+    color: #B8860B;
+    transform: translateY(-2px);
+}
+
+.section-list {
+    list-style: none;
+    padding: 0.5rem 0.5rem 0 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar */
+.section-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.section-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.section-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.section-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.empty-state {
+    color: #B0B0B0;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    font-style: italic;
+    font-size: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.empty-state::before {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.cashier-tools {
+    margin-top: 2rem;
+    background-color: #014530;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+    color: #fff;
+}
+
+.cashier-card-grid {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+}
+
+.cashier-card {
+    background: rgba(1, 49, 35, 0.8);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cashier-card button {
+    align-self: flex-start;
+    background: #B8860B;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    margin-bottom: 0.25rem;
+}
+
+.cashier-card p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.cashier-card button:hover {
+    opacity: 0.85;
+}
+
+.manager-overview {
+    margin-top: 2rem;
+}
+
+.card-text .card-link {
+    margin-top: 0.75rem;
+    display: inline-block;
+}
+
+.manager-panel {
+    min-height: 320px;
+}
+
+.manager-user-row {
+    background-color: #015c42;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    list-style: none;
+}
+
+.manager-user-row > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.manager-user-row strong {
+    color: white;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.manager-user-subtitle {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #a0a0a0;
+    line-height: 1.5;
+}
+
+.status-pill {
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 0.75rem;
+    text-transform: capitalize;
+}
+
+.status-pill--warning {
+    background: rgba(218, 165, 32, 0.25);
+}
+
+.manager-error {
+    color: #FFAF87;
+    font-size: 0.85rem;
+}
+
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .gridLayout {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto auto;
+    }
+    
+    .gridItem.overview-card:nth-child(3) {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .welcome-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .welcome-title {
+        font-size: 1.75rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 0.9375rem;
+    }
+
+    .gridLayout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 1rem;
+    }
+
+    .overview-card .card-label {
+        font-size: 0.6875rem;
+    }
+    
+    .overview-card .card-value {
+        font-size: 1.5rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1rem;
+    }
+
+    .overview-card .card-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 2.5rem;
+    }
+
+    .cashier-tools,
+    .manager-overview {
+        padding: 1.25rem;
+    }
+
+    .cashier-card-grid,
+    .manager-grid {
+        grid-template-columns: 1fr;
+    }
+}

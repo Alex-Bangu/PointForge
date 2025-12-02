@@ -1,0 +1,8 @@
+Our team used AI for the following:
+
+1. Formatting login.css and the login.jsx return statement (the html in there).
+2. Creating seed data
+3. hard coding the language translations
+4. figuring out the color blind settings
+5. determining the best way to organize the frontend components
+6. getting advice on how we could refactor our code to make it more clean, readable, and less redundant

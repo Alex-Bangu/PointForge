@@ -1,0 +1,150 @@
+.transaction-card {
+    background-color: #015c42;
+    border-radius: 10px;
+    padding: 16px;
+    list-style: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.transaction-card-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+    padding: 0;
+}
+
+.transaction-card-button {
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+}
+
+.transaction-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.transaction-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.transaction-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.transaction-type-badge {
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    text-transform: capitalize;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.transaction-type-badge--purchase {
+    background: rgba(76, 175, 80, 0.25);
+    color: #5dae60;
+}
+
+.transaction-type-badge--redemption {
+    background: rgba(244, 67, 54, 0.25);
+    color: #f55449;
+}
+
+.transaction-type-badge--transfer {
+    background: rgba(33, 150, 243, 0.25);
+    color: #2196F3;
+}
+
+.transaction-type-badge--event {
+    background: rgba(255, 152, 0, 0.25);
+    color: #FF9800;
+}
+
+.transaction-type-badge--adjustment {
+    background: rgba(156, 39, 176, 0.25);
+    color: #9a4fa8;
+}
+
+.transaction-right {
+    display: flex;
+    align-items: center;
+}
+
+.transaction-details-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    min-height: 1.5rem;
+}
+
+.transaction-amount {
+    margin: 0;
+    color: white;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.transaction-utorid {
+    margin: 0;
+    color: #b0b0b0;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.transaction-points {
+    margin: 0;
+    color: #B8860B;
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.transaction-badge {
+    display: inline-block;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.transaction-badge--suspicious {
+    background-color: rgba(244, 67, 54, 0.25);
+    color: #f44336;
+}
+
+.transaction-date-row {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.transaction-date {
+    margin: 0;
+    color: #b0b0b0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}

@@ -1,0 +1,191 @@
+.account-page {
+    display: flex;
+    min-height: calc(100vh - 200px);
+    background-color: #013220;
+    color: #B8860B;
+    padding: 20px;
+    gap: 20px;
+}
+
+.account-sidebar {
+    width: 250px;
+    background-color: #014228;
+    border-radius: 8px;
+    padding: 20px;
+    flex-shrink: 0;
+}
+
+.account-sidebar-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #B8860B;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+}
+
+.account-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.account-sidebar-item {
+    background: transparent;
+    border: none;
+    color: #B8860B;
+    text-align: left;
+    padding: 12px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.account-sidebar-item:hover {
+    background-color: rgba(184, 134, 11, 0.15);
+    color: #DAA520;
+}
+
+.account-sidebar-item.active {
+    background-color: rgba(184, 134, 11, 0.25);
+    color: #DAA520;
+    font-weight: 600;
+}
+
+.account-content {
+    flex: 1;
+    background-color: #014228;
+    border-radius: 8px;
+    padding: 30px;
+    min-height: 500px;
+}
+
+.account-section {
+    max-width: 800px;
+}
+
+.account-section-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #B8860B;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #333;
+}
+
+.account-profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.account-profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.account-profile-field label {
+    font-weight: 600;
+    color: #DAA520;
+    font-size: 0.9rem;
+}
+
+.account-profile-field p {
+    color: #B8860B;
+    font-size: 1rem;
+    margin: 0;
+    padding: 10px;
+    background-color: rgba(184, 134, 11, 0.1);
+    border-radius: 6px;
+}
+
+.account-form-skeleton {
+    padding: 20px;
+    background-color: rgba(184, 134, 11, 0.1);
+    border-radius: 8px;
+    border: 1px dashed rgba(184, 134, 11, 0.3);
+}
+
+.account-skeleton-note {
+    color: #888;
+    font-style: italic;
+    margin: 0;
+}
+
+.account-setting-group {
+    margin-bottom: 24px;
+}
+
+.account-setting-label {
+    display: block;
+    font-weight: 600;
+    color: #DAA520;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.account-setting-select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 12px;
+    background-color: rgba(184, 134, 11, 0.1);
+    border: 1px solid rgba(184, 134, 11, 0.3);
+    border-radius: 6px;
+    color: #B8860B;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-setting-select:focus {
+    outline: none;
+    border-color: #DAA520;
+    box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.2);
+}
+
+.account-setting-select option {
+    background-color: #014228;
+    color: #B8860B;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .account-page {
+        flex-direction: column;
+    }
+
+    .account-sidebar {
+        width: 100%;
+    }
+
+    .account-sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .account-sidebar-item {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+    }
+}
+
+/* Colorblind mode filters */
+.colorblind-protanopia {
+    filter: url(#protanopia);
+}
+
+.colorblind-deuteranopia {
+    filter: url(#deuteranopia);
+}
+
+.colorblind-tritanopia {
+    filter: url(#tritanopia);
+}
+
+.colorblind-achromatopsia {
+    filter: url(#achromatopsia);
+}
+

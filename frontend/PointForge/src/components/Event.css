@@ -1,0 +1,49 @@
+.event-card {
+    background-color: #015c42;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    list-style: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
+.event-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.event-title {
+    color: white;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.event-location {
+    color: #a0a0a0;
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.event-right {
+    display: flex;
+    align-items: center;
+}
+
+.event-time {
+    color: #B8860B;
+    font-size: 0.875rem;
+    margin: 0;
+    font-weight: 500;
+}

@@ -1,0 +1,108 @@
+/**
+ * Success Modal Styles
+ * 
+ * Styled to match the promotion detail modal for consistency.
+ * Uses the same dark overlay and green card design.
+ */
+
+/* Dark overlay background - same as promotion detail modal */
+.success-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001; /* Higher than promotion detail modal (1000) */
+    padding: 2rem;
+}
+
+/* Success modal card - matches promotion detail modal styling */
+.success-modal {
+    background: #014530;
+    border-radius: 16px;
+    width: min(400px, 100%);
+    padding: 2rem;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(184, 134, 11, 0.3);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Close button - positioned at top right, matches promotion detail modal */
+.success-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 2.5rem;
+    height: 2.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.success-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+/* Modal content container */
+.success-modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+/* Success checkmark icon */
+.success-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: rgba(22, 160, 133, 0.25);
+    color: #1abc9c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Success title */
+.success-modal-content h3 {
+    margin: 0;
+    color: #B8860B;
+    font-size: 1.5rem;
+}
+
+/* Success message */
+.success-modal-content p {
+    margin: 0;
+    color: #cfcfcf;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .success-modal {
+        width: 100%;
+        padding: 1.5rem;
+    }
+}
+
