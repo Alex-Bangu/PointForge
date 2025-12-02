@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prestart": "prisma db push --skip-generate --accept-data-loss",
+    "prestart": "node scripts/init-db.js",
     "start": "node index.js",
     "postinstall": "prisma generate",
     "db:push": "prisma db push --skip-generate",
