@@ -206,7 +206,6 @@ router.post("/resets/:resetToken", async (req, res) => {
     }
 
     const toFind = req.params.resetToken;
-    console.log("[AUTH] Password reset attempt - token uuid:", toFind);
     
     try {
         const token = await prisma.resetToken.findUnique({

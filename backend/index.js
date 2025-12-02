@@ -38,27 +38,22 @@ const path = require('path');
 
 if (process.env.DATABASE_URL) {
     const originalDbUrl = process.env.DATABASE_URL.trim();
-    console.log(`Original DATABASE_URL: "${originalDbUrl}"`);
     let dbUrl = originalDbUrl;
     
     // Extract the path part (remove file: prefix if present)
     let dbPath = dbUrl.replace(/^file:\/\//, '').replace(/^file:/, '');
-    console.log(`Extracted dbPath: "${dbPath}"`);
     
     // Check if it's already a file path (ends with .db) or just a directory
     const hasDbExtension = dbPath.endsWith('.db') || dbPath.endsWith('.sqlite') || dbPath.endsWith('.sqlite3');
-    console.log(`Has database extension? ${hasDbExtension}`);
     
     if (!hasDbExtension) {
         // It's a directory, append database filename
-        dbPath = path.join(dbPath, 'database.db');
-        console.log(`Appended database.db, new dbPath: "${dbPath}"`);
+        dbPath = path.join(dbUrl, 'database.db');
     }
     
     // Ensure absolute path (handle relative paths)
     if (!path.isAbsolute(dbPath)) {
         dbPath = path.resolve(dbPath);
-        console.log(`Resolved to absolute path: "${dbPath}"`);
     }
     
     // Use file:/// format for absolute paths (three slashes after file:)
@@ -71,21 +66,13 @@ if (process.env.DATABASE_URL) {
     
     if (dbUrl !== originalDbUrl) {
         process.env.DATABASE_URL = dbUrl;
-        console.log(`Normalized DATABASE_URL from "${originalDbUrl}" to: ${dbUrl}`);
-    } else {
-        console.log(`DATABASE_URL already normalized: ${dbUrl}`);
     }
     
-    // dbPath is already normalized above, use it for directory creation and logging
     // Ensure database directory exists
     const dbDir = path.dirname(dbPath);
     if (dbDir && dbDir !== '.' && !fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });
-        console.log(`Created database directory: ${dbDir}`);
     }
-    
-    console.log(`Database will be stored at: ${dbPath}`);
-    console.log(`Final DATABASE_URL: ${process.env.DATABASE_URL}`);
 }
 
 const express = require("express");
@@ -96,18 +83,13 @@ const app = express();
 // Load routes with error handling
 let authRoutes, usersRoutes, transactionsRoutes, promotionsRoutes, eventsRoutes;
 try {
-    console.log('Loading routes...');
     authRoutes = require("./routes/authRoutes");
     usersRoutes = require("./routes/usersRoutes");
     transactionsRoutes = require("./routes/transactionsRoutes");
     promotionsRoutes = require("./routes/promotionsRoutes");
     eventsRoutes = require("./routes/eventsRoutes");
-    console.log('Routes loaded successfully');
 } catch (error) {
     console.error('Error loading routes:', error);
-    console.error('Stack trace:', error.stack);
-    // Don't exit here - let the server start and show the error on requests
-    // This allows the health check to work even if routes fail
 }
 
 // CORS configuration - use environment variable or default to localhost for development
@@ -115,22 +97,12 @@ const allowedOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
     : ['http://localhost:5173'];
 
-console.log('CORS allowed origins:', allowedOrigins);
-console.log('Environment:', process.env.NODE_ENV || 'development');
-
 // Validate required environment variables
 if (!process.env.JWT_SECRET) {
     console.error('ERROR: JWT_SECRET environment variable is not set');
-    console.error('This is a required environment variable. Please set it in Railway.');
-    // Delay exit to allow logs to be written
     setTimeout(() => {
-        console.error('Exiting due to missing JWT_SECRET');
         process.exit(1);
     }, 100);
-    // Keep the process alive briefly to ensure logs are flushed
-    // The setTimeout will exit the process
-} else {
-    console.log('JWT_SECRET is set: yes');
 }
 
 app.use(cors({
