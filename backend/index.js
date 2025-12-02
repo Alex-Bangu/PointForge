@@ -8,25 +8,28 @@ const port = (() => {
     // Railway and other cloud platforms provide PORT via environment variable
     if (process.env.PORT) {
         const num = parseInt(process.env.PORT, 10);
-        if (!isNaN(num)) {
+        if (!isNaN(num) && num > 0) {
+            console.log(`Using PORT from environment: ${num}`);
             return num;
         }
+        console.warn(`Invalid PORT environment variable: ${process.env.PORT}`);
     }
 
     // Fallback to command-line argument for local development
     const args = process.argv;
     if (args.length === 3) {
         const num = parseInt(args[2], 10);
-        if (!isNaN(num)) {
+        if (!isNaN(num) && num > 0) {
+            console.log(`Using PORT from command line: ${num}`);
             return num;
         }
-        console.error("error: argument must be an integer.");
+        console.error("error: argument must be a positive integer.");
         process.exit(1);
     }
 
-    // If neither is provided, show usage
-    console.error("usage: node index.js port (or set PORT environment variable)");
-    process.exit(1);
+    // Default port for local development
+    console.warn("No PORT specified, using default port 3000");
+    return 3000;
 })();
 
 // Normalize DATABASE_URL for SQLite (important for Railway volumes)
@@ -83,10 +86,6 @@ if (process.env.DATABASE_URL) {
     
     console.log(`Database will be stored at: ${dbPath}`);
     console.log(`Final DATABASE_URL: ${process.env.DATABASE_URL}`);
-    
-    // Force Prisma to re-read the DATABASE_URL by deleting any cached Prisma Client modules
-    // This ensures Prisma uses the normalized URL
-    delete require.cache[require.resolve('@prisma/client')];
 }
 
 const express = require("express");
@@ -97,6 +96,7 @@ const app = express();
 // Load routes with error handling
 let authRoutes, usersRoutes, transactionsRoutes, promotionsRoutes, eventsRoutes;
 try {
+    console.log('Loading routes...');
     authRoutes = require("./routes/authRoutes");
     usersRoutes = require("./routes/usersRoutes");
     transactionsRoutes = require("./routes/transactionsRoutes");
@@ -105,7 +105,9 @@ try {
     console.log('Routes loaded successfully');
 } catch (error) {
     console.error('Error loading routes:', error);
+    console.error('Stack trace:', error.stack);
     // Don't exit here - let the server start and show the error on requests
+    // This allows the health check to work even if routes fail
 }
 
 // CORS configuration - use environment variable or default to localhost for development
@@ -119,9 +121,17 @@ console.log('Environment:', process.env.NODE_ENV || 'development');
 // Validate required environment variables
 if (!process.env.JWT_SECRET) {
     console.error('ERROR: JWT_SECRET environment variable is not set');
-    process.exit(1);
+    console.error('This is a required environment variable. Please set it in Railway.');
+    // Delay exit to allow logs to be written
+    setTimeout(() => {
+        console.error('Exiting due to missing JWT_SECRET');
+        process.exit(1);
+    }, 100);
+    // Keep the process alive briefly to ensure logs are flushed
+    // The setTimeout will exit the process
+} else {
+    console.log('JWT_SECRET is set: yes');
 }
-console.log('JWT_SECRET is set:', process.env.JWT_SECRET ? 'yes' : 'no');
 
 app.use(cors({
     origin: (origin, callback) => {
