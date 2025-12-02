@@ -131,7 +131,6 @@ router.route("/")
         if(showFull) {
             if(showFull === "true" || showFull === "false") {
                 showFull = (showFull === "true");
-                console.log("showFull", showFull);
             } else {
                 return res.status(400).json({"message": "Bad request"});
             }
@@ -165,12 +164,9 @@ router.route("/")
                 organizers: true
             }
         });
-        console.log("unfiltered events length: ", promotions.length);
         // for debugging purposes:
-        console.log("BEFORE FILTER ===========================================================================");
         let filteredPromotions = [];
         for(let i = 0; i < promotions.length; i++) {
-            console.log(promotions[i]);
             let promotion = promotions[i];
             let promotionStart = Date.parse(promotion.startTime);
             let promotionEnd = Date.parse(promotion.endTime);
@@ -239,7 +235,6 @@ router.route("/")
         } else {
             for(let i = 0; i < toBeReturned.length; i++) {
                 if(toBeReturned[i].published) {
-                    console.log("regular or cashier btw");
                     toReturn.push({
                         "id": toBeReturned[i].id,
                         "name": toBeReturned[i].name,
@@ -253,10 +248,6 @@ router.route("/")
                 }
             }
         }
-        console.log(req.auth.role);
-        console.log("AFTER FILTER =========================================================================");
-        console.log("get all events toReturn.length: ", toReturn.length);
-        console.log("toReturn: ", toReturn);
         return res.status(200).json({"count": count, "results": toReturn});
     });
 
@@ -723,16 +714,11 @@ router.route('/:eventId')
             organizerIds.push(event.organizers[i].id);
         }
         const higherRoles = ["manager", "superuser"];
-        console.log(req.auth.id);
-        console.log(organizerIds);
         if(!higherRoles.includes(req.auth.role) && !organizerIds.includes(req.auth.id)) {
             return res.status(403).json({"message": "Forbidden"});
         }
 
         let {name, description, location, startTime, endTime, capacity, points, published, placeId} = req.body;
-        console.log("req.body");
-        console.log(req.body);
-        console.log(published);
         if((points || (published)) && req.auth.role !== "manager") {
             return res.status(403).json({"message": "Forbidden"});
         }
@@ -792,7 +778,6 @@ router.route('/:eventId')
             }
         }
         if(published === false || published === true) {
-            console.log(published);
             if(!published) {
                 return res.status(400).json({"message": "A published event cannot be unpublished"});
             } else {

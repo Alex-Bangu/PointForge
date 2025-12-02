@@ -14,7 +14,7 @@ const mg = mailgun.client({
 });
 const router = express.Router();
 
-const {PrismaClient} = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 // regex
