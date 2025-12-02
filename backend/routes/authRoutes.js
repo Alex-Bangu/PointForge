@@ -14,7 +14,7 @@ const mg = mailgun.client({
 });
 const router = express.Router();
 
-const {PrismaClient} = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 // regex
@@ -79,6 +79,7 @@ router.post("/tokens", async (req, res) => {
     const user = await prisma.user.findUnique(
         { where: {utorid} }
     );
+    console.log(user);
 
     if (!user) {
         return res.status(400).json({"Error": "User not found"});
