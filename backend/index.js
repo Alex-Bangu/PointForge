@@ -58,6 +58,7 @@ const allowedOrigins = process.env.CORS_ORIGIN
     : ['http://localhost:5173'];
 
 console.log('CORS allowed origins:', allowedOrigins);
+console.log('Environment:', process.env.NODE_ENV || 'development');
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -69,6 +70,16 @@ app.use(cors({
         // Normalize origin (remove trailing slash)
         const normalizedOrigin = origin.replace(/\/$/, '');
         const normalizedAllowed = allowedOrigins.map(o => o.replace(/\/$/, ''));
+        
+        // In production, also allow Railway frontend domains if CORS_ORIGIN is not explicitly set
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT;
+        if (isProduction && !process.env.CORS_ORIGIN) {
+            // Allow any Railway frontend service
+            if (normalizedOrigin.includes('.up.railway.app') || normalizedOrigin.includes('.railway.app')) {
+                console.log(`CORS allowing Railway origin: ${origin}`);
+                return callback(null, true);
+            }
+        }
         
         if (normalizedAllowed.includes(normalizedOrigin)) {
             callback(null, true);
