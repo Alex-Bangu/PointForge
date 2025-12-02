@@ -49,13 +49,19 @@ if (process.env.DATABASE_URL) {
         if (!path.isAbsolute(dbPath)) {
             dbPath = path.resolve(dbPath);
         }
-        dbUrl = `file:${dbPath}`;
+        // Use file:/// format for absolute paths (three slashes)
+        // file:/// for absolute paths, file:./ for relative paths
+        if (path.isAbsolute(dbPath)) {
+            dbUrl = `file://${dbPath}`;
+        } else {
+            dbUrl = `file:${dbPath}`;
+        }
         process.env.DATABASE_URL = dbUrl;
         console.log(`Normalized DATABASE_URL from "${originalDbUrl}" to: ${dbUrl}`);
     }
     
     // Ensure database directory exists
-    const dbPath = dbUrl.replace(/^file:/, '');
+    const dbPath = dbUrl.replace(/^file:\/\/?/, '');
     const dbDir = path.dirname(dbPath);
     if (dbDir && dbDir !== '.' && !fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });
@@ -63,6 +69,7 @@ if (process.env.DATABASE_URL) {
     }
     
     console.log(`Database will be stored at: ${dbPath}`);
+    console.log(`Final DATABASE_URL: ${process.env.DATABASE_URL}`);
 }
 
 const express = require("express");
@@ -70,11 +77,19 @@ const cors = require("cors");
 const {expressjwt: jwt} = require("express-jwt");
 const app = express();
 
-const authRoutes = require("./routes/authRoutes");
-const usersRoutes = require("./routes/usersRoutes");
-const transactionsRoutes = require("./routes/transactionsRoutes");
-const promotionsRoutes = require("./routes/promotionsRoutes");
-const eventsRoutes = require("./routes/eventsRoutes");
+// Load routes with error handling
+let authRoutes, usersRoutes, transactionsRoutes, promotionsRoutes, eventsRoutes;
+try {
+    authRoutes = require("./routes/authRoutes");
+    usersRoutes = require("./routes/usersRoutes");
+    transactionsRoutes = require("./routes/transactionsRoutes");
+    promotionsRoutes = require("./routes/promotionsRoutes");
+    eventsRoutes = require("./routes/eventsRoutes");
+    console.log('Routes loaded successfully');
+} catch (error) {
+    console.error('Error loading routes:', error);
+    // Don't exit here - let the server start and show the error on requests
+}
 
 // CORS configuration - use environment variable or default to localhost for development
 const allowedOrigins = process.env.CORS_ORIGIN 
@@ -83,6 +98,13 @@ const allowedOrigins = process.env.CORS_ORIGIN
 
 console.log('CORS allowed origins:', allowedOrigins);
 console.log('Environment:', process.env.NODE_ENV || 'development');
+
+// Validate required environment variables
+if (!process.env.JWT_SECRET) {
+    console.error('ERROR: JWT_SECRET environment variable is not set');
+    process.exit(1);
+}
+console.log('JWT_SECRET is set:', process.env.JWT_SECRET ? 'yes' : 'no');
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -122,11 +144,18 @@ app.use(cors({
 app.options('*', cors()); // allow preflight globally
 
 app.use(express.json());
+
+// Health check endpoint for Railway
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.use(jwt({
     secret: process.env.JWT_SECRET,
     algorithms: ["HS256"],
 }).unless({
     path: [
+        "/health",
         "/auth/tokens",
         "/auth/resets",
         /^\/auth\/resets\/[^/]+$/,
@@ -137,11 +166,49 @@ app.use(jwt({
 
 // ADD YOUR WORK HERE
 // ROUTES
-app.use("/auth", authRoutes);
-app.use("/users", usersRoutes);
-app.use("/transactions", transactionsRoutes)
-app.use("/promotions", promotionsRoutes)
-app.use("/events", eventsRoutes)
+if (authRoutes) app.use("/auth", authRoutes);
+if (usersRoutes) app.use("/users", usersRoutes);
+if (transactionsRoutes) app.use("/transactions", transactionsRoutes);
+if (promotionsRoutes) app.use("/promotions", promotionsRoutes);
+if (eventsRoutes) app.use("/events", eventsRoutes);
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    if (err.name === 'UnauthorizedError') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    // Don't exit immediately, let the server try to handle it
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Don't exit immediately
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully...');
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('SIGINT received, shutting down gracefully...');
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
+});
 
 const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);
