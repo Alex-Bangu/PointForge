@@ -2,14 +2,14 @@ import { UserContext } from "../contexts/UserContext.jsx"
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Event, Promotion, Transaction, EmptyState, Loading, Error, PromotionDetailModal, EventDetailModal, TransactionDetailModal, UserDetailModal } from "../components";
-import { filterUpcoming, filterActive } from "../utils/dateUtils.js";
+import { filterUpcoming } from "../utils/dateUtils.js";
 import { useManagerData } from "../hooks/useManagerData.js";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
 import "./dashboard.css";
 
 function Dashboard() {
     // Get user data and context information
-    const {user, loading, error, events, promotions, transactions} = useContext(UserContext);
+    const {user, loading, error, events, transactions} = useContext(UserContext);
     const {t} = useLanguage();
     const navigate = useNavigate();
     
