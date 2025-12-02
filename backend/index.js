@@ -53,6 +53,8 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+app.options('*', cors()); // allow preflight globally
+
 app.use(express.json());
 app.use(jwt({
     secret: process.env.JWT_SECRET,
