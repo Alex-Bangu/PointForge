@@ -10,6 +10,7 @@
  */
 
 import { useContext, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
 import {
@@ -30,16 +31,19 @@ function Users() {
     const { t } = useLanguage();
     const isManager = user?.role === 'manager' || user?.role === 'superuser';
 
-    // Filter state - stores all filter values
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Filter state - initialized from URL params
     const [filters, setFilters] = useState({
-        name: '',
-        role: '',
-        verified: '',
-        activated: ''
+        name: searchParams.get('name') || '',
+        role: searchParams.get('role') || '',
+        verified: searchParams.get('verified') || '',
+        activated: searchParams.get('activated') || ''
     });
 
     // UI state management
-    const [page, setPage] = useState(1);
+    const pageParam = searchParams.get('page');
+    const [page, setPage] = useState(pageParam ? Math.max(1, parseInt(pageParam)) : 1);
     const [refreshKey, setRefreshKey] = useState(0);
     const [data, setData] = useState({ results: [], count: 0 });
     const [loading, setLoading] = useState(false);
@@ -56,6 +60,18 @@ function Users() {
         const timer = setTimeout(() => setToast(''), 4000);
         return () => clearTimeout(timer);
     }, [toast]);
+
+    // Update URL params when filters or page change (bookmarkable URLs)
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (filters.name.trim()) params.set('name', filters.name.trim());
+        if (filters.role) params.set('role', filters.role);
+        if (filters.verified === 'true' || filters.verified === 'false') params.set('verified', filters.verified);
+        if (filters.activated === 'true' || filters.activated === 'false') params.set('activated', filters.activated);
+        if (page > 1) params.set('page', String(page));
+        
+        setSearchParams(params);
+    }, [filters, page, setSearchParams]);
 
     // Main effect: Fetch users from API whenever filters, page, or refreshKey changes
     useEffect(() => {
@@ -151,6 +167,7 @@ function Users() {
             activated: ''
         });
         setPage(1);
+        // URL will be updated by the useEffect above
     };
 
     // Update a single filter value and reset to page 1

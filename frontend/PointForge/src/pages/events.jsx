@@ -12,6 +12,7 @@
  */
 
 import { useContext, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
 import {
@@ -35,23 +36,26 @@ function Events() {
     const isManager = user?.role === 'manager' || user?.role === 'superuser';
     const isRegular = user?.role === 'regular';
 
-    // Filter state - stores all filter values (search, status, type, date ranges, etc.)
-    // Managers default to 'all' status to see everything; regular users default to 'active' only
-    const [filters, setFilters] = useState({
-        name: '',
-        location: '',
-        started: "",
-        ended: "",
-        full: "",
-        published: ""
-    });
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    let params = new URLSearchParams();
+    // Filter state - initialized from URL params
+    // Regular users can't see unpublished events, so ignore published=false from URL
+    const publishedFromUrl = searchParams.get('published');
+    const initialPublished = isManager ? (publishedFromUrl || "") : "";
+    const [filters, setFilters] = useState({
+        name: searchParams.get('name') || '',
+        location: searchParams.get('location') || '',
+        started: searchParams.get('started') || "",
+        ended: searchParams.get('ended') || "",
+        full: searchParams.get('full') || "",
+        published: initialPublished
+    });
 
     // UI state management
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);  // Toggle advanced filter panel
     const [lastRole, setLastRole] = useState(user?.role);                   // Track role changes to reset filters
-    const [page, setPage] = useState(1);                                     // Current page number for pagination
+    const pageParam = searchParams.get('page');
+    const [page, setPage] = useState(pageParam ? Math.max(1, parseInt(pageParam)) : 1);  // Current page number for pagination
     const [refreshKey, setRefreshKey] = useState(0);                        // Key to force re-fetch when events change
     const [data, setData] = useState({ results: [], count: 0 });            // Events data from API
     const [loading, setLoading] = useState(false);                          // Loading state for API calls
@@ -82,6 +86,22 @@ function Events() {
         return () => clearTimeout(timer);  // Cleanup: cancel timer if component unmounts or toast changes
     }, [toast]);
 
+    // Update URL params when filters or page change (bookmarkable URLs)
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (filters.name.trim()) params.set('name', filters.name.trim());
+        if (filters.location.trim()) params.set('location', filters.location.trim());
+        if (filters.started === "true" || filters.started === "false") params.set('started', filters.started);
+        if (filters.ended === "true" || filters.ended === "false") params.set('ended', filters.ended);
+        if (filters.full === "true" || filters.full === "false") params.set('full', filters.full);
+        if (isManager && filters.published === "false") {
+            params.set('published', filters.published);
+        }
+        if (page > 1) params.set('page', String(page));
+        
+        setSearchParams(params);
+    }, [filters, page, isManager, setSearchParams]);
+
     // Reset status filter when user role changes
     // This ensures managers always see 'all' and regular users see 'active' when they log in
     useEffect(() => {
@@ -105,6 +125,7 @@ function Events() {
             setError('');       // Clear any previous errors
             try {
                 // Build query parameters from filter state
+                const params = new URLSearchParams();
                 params.set('page', String(page));           // Current page number
                 params.set('limit', String(PAGE_SIZE));     // How many per page
 
@@ -122,7 +143,7 @@ function Events() {
                     params.set('started', filters.started);
                 }
 
-                if(filters.ended === "true" | filters.ended === "false") {
+                if(filters.ended === "true" || filters.ended === "false") {
                     params.set('ended', filters.ended);
                 }
 
@@ -190,7 +211,6 @@ function Events() {
     const totalPages = Math.max(1, Math.ceil((data.count || 0) / PAGE_SIZE));
 
     const clearFilters = () => {
-        params = new URLSearchParams();
         setFilters({
             name: '',
             location: '',
@@ -199,6 +219,8 @@ function Events() {
             full: "",
             published: ""
         });
+        setPage(1);
+        // URL will be updated by the useEffect above
     }
 
     // Update a single filter value and reset to page 1

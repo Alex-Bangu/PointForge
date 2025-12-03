@@ -12,6 +12,7 @@
  */
 
 import { useContext, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
 import {
@@ -36,28 +37,35 @@ function Promotions() {
     const isManager = user?.role === 'manager' || user?.role === 'superuser';
     const isRegular = user?.role === 'regular';
 
-    // Filter state - stores all filter values (search, status, type, date ranges, etc.)
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Filter state - initialized from URL params
     // Managers default to 'all' status to see everything; regular users default to 'active' only
+    const defaultStatus = isManager ? 'all' : 'active';
+    const statusFromUrl = searchParams.get('status');
+    // Regular users always see 'active', even if URL has different status
+    const initialStatus = isRegular ? 'active' : (statusFromUrl || defaultStatus);
     const [filters, setFilters] = useState({
-        search: '',                    // Search by promotion name
-        status: isManager ? 'all' : 'active',  // Filter by status: active, upcoming, ended, or all
-        type: 'all',                  // Filter by type: automatic, onetime, or all
-        minSpendingMin: '',           // Minimum spending filter (lower bound)
-        minSpendingMax: '',           // Minimum spending filter (upper bound)
-        rateMin: '',                   // Bonus rate filter (lower bound)
-        rateMax: '',                   // Bonus rate filter (upper bound)
-        pointsMin: '',                 // Points filter (lower bound)
-        pointsMax: '',                 // Points filter (upper bound)
-        startAfter: '',                // Filter promotions that start after this date
-        startBefore: '',               // Filter promotions that start before this date
-        endAfter: '',                  // Filter promotions that end after this date
-        endBefore: ''                  // Filter promotions that end before this date
+        search: searchParams.get('name') || '',                    // Search by promotion name (URL uses 'name')
+        status: initialStatus,  // Filter by status: active, upcoming, ended, or all
+        type: searchParams.get('type') || 'all',                  // Filter by type: automatic, onetime, or all
+        minSpendingMin: searchParams.get('minSpendingMin') || '',           // Minimum spending filter (lower bound)
+        minSpendingMax: searchParams.get('minSpendingMax') || '',           // Minimum spending filter (upper bound)
+        rateMin: searchParams.get('rateMin') || '',                   // Bonus rate filter (lower bound)
+        rateMax: searchParams.get('rateMax') || '',                   // Bonus rate filter (upper bound)
+        pointsMin: searchParams.get('pointsMin') || '',                 // Points filter (lower bound)
+        pointsMax: searchParams.get('pointsMax') || '',                 // Points filter (upper bound)
+        startAfter: searchParams.get('startAfter') || '',                // Filter promotions that start after this date
+        startBefore: searchParams.get('startBefore') || '',               // Filter promotions that start before this date
+        endAfter: searchParams.get('endAfter') || '',                  // Filter promotions that end after this date
+        endBefore: searchParams.get('endBefore') || ''                  // Filter promotions that end before this date
     });
     
     // UI state management
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);  // Toggle advanced filter panel
     const [lastRole, setLastRole] = useState(user?.role);                   // Track role changes to reset filters
-    const [page, setPage] = useState(1);                                     // Current page number for pagination
+    const pageParam = searchParams.get('page');
+    const [page, setPage] = useState(pageParam ? Math.max(1, parseInt(pageParam)) : 1);  // Current page number for pagination
     const [refreshKey, setRefreshKey] = useState(0);                        // Key to force re-fetch when promotions change
     const [data, setData] = useState({ results: [], count: 0 });            // Promotions data from API
     const [loading, setLoading] = useState(false);                          // Loading state for API calls
@@ -87,6 +95,30 @@ function Promotions() {
         const timer = setTimeout(() => setToast(''), 4000);  // Clear toast after 4 seconds
         return () => clearTimeout(timer);  // Cleanup: cancel timer if component unmounts or toast changes
     }, [toast]);
+
+    // Update URL params when filters or page change (bookmarkable URLs)
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (filters.search.trim()) params.set('name', filters.search.trim());
+        // Only include status in URL for managers (regular users always see 'active')
+        if (isManager && filters.status && filters.status !== 'all') {
+            params.set('status', filters.status);
+        }
+        if (filters.type && filters.type !== 'all') params.set('type', filters.type);
+        if (filters.minSpendingMin) params.set('minSpendingMin', filters.minSpendingMin);
+        if (filters.minSpendingMax) params.set('minSpendingMax', filters.minSpendingMax);
+        if (filters.rateMin) params.set('rateMin', filters.rateMin);
+        if (filters.rateMax) params.set('rateMax', filters.rateMax);
+        if (filters.pointsMin) params.set('pointsMin', filters.pointsMin);
+        if (filters.pointsMax) params.set('pointsMax', filters.pointsMax);
+        if (filters.startAfter) params.set('startAfter', filters.startAfter);
+        if (filters.startBefore) params.set('startBefore', filters.startBefore);
+        if (filters.endAfter) params.set('endAfter', filters.endAfter);
+        if (filters.endBefore) params.set('endBefore', filters.endBefore);
+        if (page > 1) params.set('page', String(page));
+        
+        setSearchParams(params);
+    }, [filters, page, isManager, setSearchParams]);
 
     // Reset status filter when user role changes
     // This ensures managers always see 'all' and regular users see 'active' when they log in
