@@ -1,6 +1,308 @@
-# This text file should explain how to deploy your website.
+# PointForge Installation and Deployment Guide
 
-# You should write detailed description on:
+## Prerequisites
 
-# 1. All the packages you need to install
-# 2. How to configure various servers (e.g., Nginx, Apache, etc)
+### System Requirements
+- **Node.js**: Version 18.x or higher
+- **npm**: Version 9.x or higher (comes with Node.js)
+- **Operating System**: 
+  - Local: macOS, Linux, or Windows
+  - Production: Railway (cloud platform)
+- **Database**: SQLite (included, no separate installation needed)
+
+### Required Packages
+
+#### Backend Dependencies
+All backend dependencies are listed in `backend/package.json`:
+- **@prisma/client** (^6.4.1): Prisma ORM client for database operations
+- **bcrypt** (^5.1.1): Password hashing
+- **cors** (^2.8.5): Cross-origin resource sharing middleware
+- **express** (^4.21.2): Web framework for Node.js
+- **express-jwt** (^8.5.1): JWT authentication middleware
+- **jsonwebtoken** (^9.0.2): JWT token generation and verification
+- **mailgun.js** (^12.2.0): Email service for password resets (optional)
+- **multer** (^1.4.5-lts.1): File upload handling
+- **prisma** (^6.4.1): Prisma CLI for database migrations
+- **sqlite3** (^5.1.7): SQLite database driver
+- **uuid** (^11.1.0): UUID generation
+- **zod** (^3.24.2): Schema validation
+- **dotenv** (included): Environment variable management
+
+#### Frontend Dependencies
+All frontend dependencies are listed in `frontend/PointForge/package.json`:
+- **react** (^19.2.0): React library
+- **react-dom** (^19.2.0): React DOM renderer
+- **react-router-dom** (^7.9.6): Client-side routing
+- **qrcode.react** (^4.2.0): QR code generation component
+- **vite** (^7.2.2): Build tool and dev server
+- **eslint**: Code linting (dev dependency)
+
+#### External Services
+- **Google Maps Embed API**: For displaying event locations (requires API key)
+- **Mailgun**: For email functionality (optional, requires API key and domain)
+
+---
+
+## Local Development Setup
+
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/Alex-Bangu/PointForge.git
+cd PointForge
+```
+
+### Step 2: Backend Setup
+
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment variables:
+Create a `.env` file in the `backend` directory with the following:
+```env
+# Database
+DATABASE_URL="file:./database.db"
+
+# JWT Secret (generate a random string)
+Example: JWT_SECRET="ZVzZES3mYmWrlDiXx+/sojIdD6GlLP1cLRxwinvmxSw="
+
+# CORS Origin - Where your frontend is running (localhost for local dev)
+CORS_ORIGIN="http://localhost:5173"
+
+# Frontend URL - Production URL for password reset email links
+# Set this to your production URL even when testing locally
+FRONTEND_URL="https://frontend-service-production-e80c.up.railway.app"
+
+# Mailgun (optional - leave empty if not using email)
+MAILGUN_API_KEY=""
+MAILGUN_DOMAIN=""
+
+# Port (optional - defaults to 3000)
+PORT=3000
+
+# Google Maps API Key (optional - for event location maps)
+# This is set in frontend .env, not backend
+```
+
+**Important Notes:**
+- `CORS_ORIGIN` should match where your frontend is actually running:
+  - Local dev: `http://localhost:5173` (Vite default port)
+  - Production: Your production frontend URL
+- `FRONTEND_URL` is used for password reset email links - set it to your production URL so reset links work correctly
+- You can have multiple CORS origins by separating with commas: `http://localhost:5173,https://your-production-url.com`
+
+4. Initialize the database:
+```bash
+npm run prestart
+# This runs: node scripts/init-db.js
+# Which will:
+#   - Push Prisma schema to database
+#   - Generate Prisma Client
+#   - Seed the database with sample data
+```
+
+Alternatively, you can run these steps separately:
+```bash
+npx prisma db push
+npx prisma generate
+npm run db:seed
+```
+
+5. Start the backend server:
+```bash
+npm start
+# Or: node index.js 3000
+```
+
+The backend will run on `http://localhost:3000` by default.
+
+### Step 3: Frontend Setup
+
+1. Navigate to the frontend directory:
+```bash
+cd ../frontend/PointForge
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment variables:
+Create a `.env` file in the `frontend/PointForge` directory:
+```env
+# Backend API URL
+VITE_API_URL=http://localhost:3000
+
+# Google Maps API Key (optional)
+VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+The frontend will run on `http://localhost:5173` by default.
+
+### Step 4: Access the Application
+
+1. Open your browser and navigate to `http://localhost:5173`
+2. Use the demo credentials (see README.md) to log in
+
+---
+
+## Production Deployment
+
+### Railway Deployment
+
+Railway is a cloud platform that simplifies deployment. The backend and frontend can run on the same Railway project as separate services.
+
+#### Step 1: Backend Deployment
+
+1. **Create Backend Service:**
+   - Connect your GitHub repository to Railway
+   - Create a new service for the backend
+   - Set the **Root Directory** to `backend`
+   - Set the **Start Command** to: `npm start`
+
+2. **Configure Environment Variables:**
+   Add the following environment variables in Railway:
+   - `DATABASE_URL`: `file:/data/database.db` (Railway will mount a volume)
+   - `JWT_SECRET`: Generate using `openssl rand -base64 32` (see below)
+   - `CORS_ORIGIN`: Your production frontend URL (e.g., `https://frontend-service-production-e80c.up.railway.app`)
+   - `FRONTEND_URL`: Your production frontend URL (for password reset emails)
+   - `MAILGUN_API_KEY`: Your Mailgun API key (optional, if using email)
+   - `MAILGUN_DOMAIN`: Your Mailgun domain (optional, if using email)
+   - `SEED_DATABASE`: `true` (optional, to auto-seed on first deploy)
+   - `PORT`: Railway sets this automatically (don't override)
+
+3. **Add Volume for Database:**
+   - In Railway, add a volume mount at `/data`
+   - This ensures your SQLite database persists across deployments
+
+4. **Deploy:**
+   - Railway will automatically:
+     - Run `npm install`
+     - Run `npm run prestart` (which initializes and seeds the database)
+     - Start the server with `npm start`
+
+#### Step 2: Frontend Deployment
+
+1. **Create Frontend Service:**
+   - Create a new service in the same Railway project
+   - Set the **Root Directory** to `frontend/PointForge`
+   - Set the **Build Command** to: `npm run build`
+   - Set the **Start Command** to: `npm run preview` (or Railway can serve static files automatically)
+
+2. **Configure Environment Variables:**
+   Add the following environment variables:
+   - `VITE_API_URL`: Your backend service URL (e.g., `https://your-backend-service.railway.app`)
+   - `VITE_GOOGLE_MAPS_API_KEY`: Your Google Maps API key (optional)
+
+3. **Deploy:**
+   - Railway will automatically:
+     - Run `npm install`
+     - Run `npm run build`
+     - Serve the built static files
+
+#### Generating JWT Secret
+
+To generate a secure JWT secret for production:
+
+```bash
+openssl rand -base64 32
+```
+
+Copy the output and use it as your `JWT_SECRET` environment variable. **Never commit secrets to version control.**
+
+#### Railway-Specific Notes
+
+- Railway automatically detects Node.js projects and installs dependencies
+- The `prestart` script runs automatically before `start`, which initializes the database
+- Volumes mounted at `/data` persist across deployments
+- Railway provides HTTPS automatically for your services
+- Environment variables can be set per-service in the Railway dashboard
+
+---
+
+## Database Seeding
+
+The database is automatically seeded when you run `npm run prestart` in the backend directory. The seed script (`backend/prisma/seed.mjs`) creates:
+
+- **20 Users**: Including 1 superuser, 3 managers, 3 cashiers, and 13 regular users
+- **30+ Transactions**: Including purchases, redemptions, transfers, events, and adjustments
+- **6 Events**: Mix of past, present, and future events
+- **15 Promotions**: Mix of automatic and one-time promotions
+
+To manually reseed the database:
+```bash
+cd backend
+npm run db:seed
+```
+
+**Note**: Seeding will clear all existing data and recreate it from scratch.
+
+---
+
+## Environment Variables Reference
+
+### Backend (.env)
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `DATABASE_URL` | Yes | SQLite database file path | `file:./database.db` (local)<br>`file:/data/database.db` (Railway) |
+| `JWT_SECRET` | Yes | Secret key for JWT tokens | Random 32+ character string |
+| `CORS_ORIGIN` | Yes | **Where frontend is running** - controls which origins can make API requests | **Local**: `http://localhost:5173`<br>**Production**: `https://frontend-service-production-e80c.up.railway.app`<br>**Multiple**: `http://localhost:5173,https://production-url.com` |
+| `FRONTEND_URL` | No* | **Production frontend URL** - used for password reset email links | `https://frontend-service-production-e80c.up.railway.app`<br>*Required if using password reset feature |
+| `PORT` | No | Server port (default: 3000, Railway sets automatically) | `3000` |
+| `MAILGUN_API_KEY` | No | Mailgun API key for emails | `key-xxxxx` |
+| `MAILGUN_DOMAIN` | No | Mailgun domain for emails | `mg.example.com` |
+| `SEED_DATABASE` | No | Auto-seed database on startup (Railway only) | `true` |
+
+**Key Difference:**
+- **`CORS_ORIGIN`**: Set to wherever your frontend is **actually running** (localhost for local dev, production URL for production)
+- **`FRONTEND_URL`**: Set to your **production URL** (used in email links, so should point to production even when testing locally)
+
+### Frontend (.env)
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `VITE_API_URL` | Yes | Backend API URL | **Local**: `http://localhost:3000`<br>**Production**: `https://your-backend.railway.app` |
+| `VITE_GOOGLE_MAPS_API_KEY` | No | Google Maps API key | `AIza...` |
+
+---
+
+## Troubleshooting
+
+### Database Issues
+- **"Table does not exist"**: Run `npx prisma db push` and `npx prisma generate`
+- **"Database locked"**: Ensure only one instance of the backend is running
+- **"Invalid DATABASE_URL"**: Ensure SQLite URLs start with `file:` prefix
+
+### Port Already in Use
+- Change the port in backend: `node index.js 3001`
+- Update frontend `.env`: `VITE_API_URL=http://localhost:3001`
+
+### CORS Errors
+- Ensure `CORS_ORIGIN` in backend matches your frontend URL exactly
+- Check that backend is running and accessible
+
+### Build Errors
+- Clear node_modules and reinstall: `rm -rf node_modules package-lock.json && npm install`
+- Ensure Node.js version is 18.x or higher: `node --version`
+
+---
+
+## Additional Notes
+
+- The backend and frontend can run on the same machine
+- SQLite database file is stored in `backend/database.db` (local) or `/data/database.db` (production with volume)
+- All demo accounts use the password: `Password123!`
+- See README.md for demo credentials and URLs

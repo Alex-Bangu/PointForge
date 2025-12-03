@@ -1,3 +1,6 @@
+// External library: qrcode.react
+// Source: https://www.npmjs.com/package/qrcode.react
+// Used for generating QR codes for transaction redemption
 import { QRCodeSVG } from 'qrcode.react';
 import './QRCodeDisplay.css';
 
