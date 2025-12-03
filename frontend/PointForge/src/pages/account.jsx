@@ -1,14 +1,38 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { UserContext } from '../contexts/UserContext.jsx';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
 import { useColorblindMode } from '../contexts/ColorblindModeContext.jsx';
+import { useInterfaceView } from '../contexts/InterfaceViewContext.jsx';
+import { authenticatedFetch } from '../utils/api.js';
+import { Error, SuccessModal } from '../components';
 import './account.css';
 
 function Account() {
-    const { user } = useContext(UserContext);
+    const { user, refreshUserData } = useContext(UserContext);
     const { language, setLanguage, t } = useLanguage();
     const { colorblindMode, setColorblindMode } = useColorblindMode();
+    const { interfaceView, setInterfaceView, availableViews, effectiveRole } = useInterfaceView();
     const [activeSection, setActiveSection] = useState('profile');
+
+    // Account info update state
+    const [accountInfo, setAccountInfo] = useState({
+        name: user?.name || '',
+        email: user?.email || '',
+        birthday: user?.birthday || ''
+    });
+    const [accountInfoError, setAccountInfoError] = useState('');
+    const [accountInfoLoading, setAccountInfoLoading] = useState(false);
+    const [accountInfoSuccess, setAccountInfoSuccess] = useState(false);
+
+    // Password update state
+    const [passwordForm, setPasswordForm] = useState({
+        old: '',
+        new: '',
+        confirm: ''
+    });
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordSuccess, setPasswordSuccess] = useState(false);
 
     const menuSections = [
         { id: 'profile', label: t('account.profile') },
@@ -54,6 +78,105 @@ function Account() {
         { code: 'achromatopsia', label: t('account.achromatopsia') },
     ];
 
+    // Update account info form when user changes
+    useEffect(() => {
+        if (user) {
+            setAccountInfo({
+                name: user.name || '',
+                email: user.email || '',
+                birthday: user.birthday || ''
+            });
+        }
+    }, [user]);
+
+    const handleAccountInfoSubmit = async (e) => {
+        e.preventDefault();
+        setAccountInfoError('');
+        setAccountInfoLoading(true);
+        setAccountInfoSuccess(false);
+
+        try {
+            const payload = {};
+            if (accountInfo.name !== user?.name) payload.name = accountInfo.name;
+            if (accountInfo.email !== user?.email) payload.email = accountInfo.email;
+            if (accountInfo.birthday !== user?.birthday) payload.birthday = accountInfo.birthday;
+
+            if (Object.keys(payload).length === 0) {
+                setAccountInfoError('No changes to save');
+                return;
+            }
+
+            const response = await authenticatedFetch('/users/me', {
+                method: 'PATCH',
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.Message || data.message || 'Failed to update account information');
+            }
+
+            setAccountInfoSuccess(true);
+            await refreshUserData();
+            setTimeout(() => setAccountInfoSuccess(false), 3000);
+        } catch (err) {
+            setAccountInfoError(err.message || 'Failed to update account information');
+        } finally {
+            setAccountInfoLoading(false);
+        }
+    };
+
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setPasswordError('');
+
+        if (passwordForm.new !== passwordForm.confirm) {
+            setPasswordError('New passwords do not match');
+            return;
+        }
+
+        if (passwordForm.new.length < 8) {
+            setPasswordError('Password must be at least 8 characters long');
+            return;
+        }
+
+        setPasswordLoading(true);
+        setPasswordSuccess(false);
+
+        try {
+            const response = await authenticatedFetch('/users/me/password', {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    old: passwordForm.old,
+                    new: passwordForm.new
+                })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.Message || data.message || 'Failed to update password');
+            }
+
+            setPasswordSuccess(true);
+            setPasswordForm({ old: '', new: '', confirm: '' });
+            setTimeout(() => setPasswordSuccess(false), 3000);
+        } catch (err) {
+            setPasswordError(err.message || 'Failed to update password');
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
+    const getInterfaceLabel = (view) => {
+        const labels = {
+            regular: 'Regular User',
+            cashier: 'Cashier',
+            manager: 'Manager',
+            organizer: 'Event Organizer'
+        };
+        return labels[view] || view;
+    };
+
     return (
         <div className="account-page">
             <div className="account-sidebar">
@@ -84,6 +207,18 @@ function Account() {
                                 <label>{t('account.email')}</label>
                                 <p>{user?.email || 'N/A'}</p>
                             </div>
+                            <div className="account-profile-field">
+                                <label>UTORid</label>
+                                <p>{user?.utorid || 'N/A'}</p>
+                            </div>
+                            <div className="account-profile-field">
+                                <label>Role</label>
+                                <p>{user?.role || 'N/A'}</p>
+                            </div>
+                            <div className="account-profile-field">
+                                <label>Points</label>
+                                <p>{user?.points?.toLocaleString() || 0}</p>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -91,24 +226,120 @@ function Account() {
                 {activeSection === 'accountInfo' && (
                     <div className="account-section">
                         <h3 className="account-section-title">{t('account.updateInfo')}</h3>
-                        <div className="account-form-skeleton">
-                            <p className="account-skeleton-note">
-                                {/* Placeholder for account information update form */}
-                                This section will allow users to update their account information.
-                            </p>
-                        </div>
+                        {accountInfoError && <Error error={accountInfoError} />}
+                        {accountInfoSuccess && (
+                            <div className="account-success-message">
+                                Account information updated successfully!
+                            </div>
+                        )}
+                        <form onSubmit={handleAccountInfoSubmit} className="account-form">
+                            <div className="account-form-group">
+                                <label htmlFor="name">
+                                    {t('account.name')}
+                                </label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    value={accountInfo.name}
+                                    onChange={(e) => setAccountInfo({ ...accountInfo, name: e.target.value })}
+                                    maxLength={50}
+                                    disabled={accountInfoLoading}
+                                />
+                            </div>
+                            <div className="account-form-group">
+                                <label htmlFor="email">
+                                    {t('account.email')}
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={accountInfo.email}
+                                    onChange={(e) => setAccountInfo({ ...accountInfo, email: e.target.value })}
+                                    disabled={accountInfoLoading}
+                                />
+                            </div>
+                            <div className="account-form-group">
+                                <label htmlFor="birthday">
+                                    Birthday (YYYY-MM-DD)
+                                </label>
+                                <input
+                                    type="date"
+                                    id="birthday"
+                                    value={accountInfo.birthday || ''}
+                                    onChange={(e) => setAccountInfo({ ...accountInfo, birthday: e.target.value })}
+                                    disabled={accountInfoLoading}
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="account-form-submit"
+                                disabled={accountInfoLoading}
+                            >
+                                {accountInfoLoading ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </form>
                     </div>
                 )}
 
                 {activeSection === 'password' && (
                     <div className="account-section">
                         <h3 className="account-section-title">{t('account.updatePassword')}</h3>
-                        <div className="account-form-skeleton">
-                            <p className="account-skeleton-note">
-                                {/* Placeholder for password update form */}
-                                This section will allow users to update their password.
-                            </p>
-                        </div>
+                        {passwordError && <Error error={passwordError} />}
+                        {passwordSuccess && (
+                            <div className="account-success-message">
+                                Password updated successfully!
+                            </div>
+                        )}
+                        <form onSubmit={handlePasswordSubmit} className="account-form">
+                            <div className="account-form-group">
+                                <label htmlFor="oldPassword">
+                                    Current Password
+                                </label>
+                                <input
+                                    type="password"
+                                    id="oldPassword"
+                                    value={passwordForm.old}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, old: e.target.value })}
+                                    disabled={passwordLoading}
+                                    required
+                                />
+                            </div>
+                            <div className="account-form-group">
+                                <label htmlFor="newPassword">
+                                    New Password
+                                </label>
+                                <input
+                                    type="password"
+                                    id="newPassword"
+                                    value={passwordForm.new}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                                    disabled={passwordLoading}
+                                    required
+                                    minLength={8}
+                                />
+                                <small>Must be at least 8 characters with uppercase, lowercase, number, and special character</small>
+                            </div>
+                            <div className="account-form-group">
+                                <label htmlFor="confirmPassword">
+                                    Confirm New Password
+                                </label>
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    value={passwordForm.confirm}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                                    disabled={passwordLoading}
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="account-form-submit"
+                                disabled={passwordLoading}
+                            >
+                                {passwordLoading ? 'Updating...' : 'Update Password'}
+                            </button>
+                        </form>
                     </div>
                 )}
 
@@ -117,8 +348,8 @@ function Account() {
                         <h3 className="account-section-title">{t('account.resetPassword')}</h3>
                         <div className="account-form-skeleton">
                             <p className="account-skeleton-note">
-                                {/* Placeholder for password reset form */}
-                                This section will allow users to reset their password using the existing backend logic.
+                                To reset your password, please use the "Forgot Password" link on the login page.
+                                This will send a password reset email to your registered email address.
                             </p>
                         </div>
                     </div>
@@ -127,11 +358,52 @@ function Account() {
                 {activeSection === 'interface' && (
                     <div className="account-section">
                         <h3 className="account-section-title">{t('account.switchInterface')}</h3>
-                        <div className="account-form-skeleton">
-                            <p className="account-skeleton-note">
-                                {/* Placeholder for interface switching */}
-                                This section will allow users to switch between different interfaces (cashier, event organizer, manager, regular user) based on their permissions.
+                        <div className="account-setting-group">
+                            <label className="account-setting-label">
+                                Current Interface View
+                            </label>
+                            <p className="account-interface-info">
+                                You are currently viewing the interface as: <strong>{getInterfaceLabel(effectiveRole)}</strong>
                             </p>
+                            {interfaceView && (
+                                <p className="account-interface-note">
+                                    (Switched from your actual role: {user?.role})
+                                </p>
+                            )}
+                        </div>
+                        <div className="account-setting-group">
+                            <label className="account-setting-label">
+                                Switch Interface View
+                            </label>
+                            <select
+                                className="account-setting-select"
+                                value={interfaceView || user?.role || 'regular'}
+                                onChange={(e) => {
+                                    const selectedView = e.target.value;
+                                    // Save to localStorage synchronously before reload
+                                    if (selectedView === user?.role) {
+                                        localStorage.removeItem('interfaceView');
+                                        setInterfaceView(null); // Reset to actual role
+                                    } else {
+                                        localStorage.setItem('interfaceView', selectedView);
+                                        setInterfaceView(selectedView);
+                                    }
+                                    // Small delay to ensure localStorage is written, then reload
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 100);
+                                }}
+                            >
+                                {availableViews.map((view) => (
+                                    <option key={view} value={view}>
+                                        {getInterfaceLabel(view)} {view === user?.role ? '(Default)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                            <small className="account-interface-help">
+                                Switch between different interface views based on your roles and permissions.
+                                This affects what features and pages you can see.
+                            </small>
                         </div>
                     </div>
                 )}

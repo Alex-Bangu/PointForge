@@ -5,11 +5,13 @@ import { Event, Promotion, Transaction, EmptyState, Loading, Error, PromotionDet
 import { filterUpcoming } from "../utils/dateUtils.js";
 import { useManagerData } from "../hooks/useManagerData.js";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useInterfaceView } from "../contexts/InterfaceViewContext.jsx";
 import "./dashboard.css";
 
 function Dashboard() {
     // Get user data and context information
     const {user, loading, error, events, transactions} = useContext(UserContext);
+    const {effectiveRole} = useInterfaceView();
     const {t} = useLanguage();
     const navigate = useNavigate();
     
@@ -24,7 +26,8 @@ function Dashboard() {
     const [userModalOpen, setUserModalOpen] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
 
-    const role = user?.role ?? 'regular';
+    // Use effectiveRole for UI display (respects interface switching)
+    const role = effectiveRole ?? user?.role ?? 'regular';
     const isRegular = role === 'regular';
     const isCashier = role === 'cashier';
     const isManagerOrSuperuser = role === 'manager' || role === 'superuser';

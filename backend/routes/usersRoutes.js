@@ -19,6 +19,7 @@ const dateRegex = /^(\d{4})-(02)-(29)|(\d{4})-(0[469]|11)-(30)|(\d{4})-(01|03|05
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])(?!.*\s)[A-Za-z\d\W_]{8,128}$/;
 const nameRegex = /^.{1,50}$/;
 
+// Public registration endpoint (no auth required)
 router.post("/", async (req, res) => {
     const {utorid, name, email, password} = req.body;
     if(!utorid || !name || !email || !password) {
@@ -80,6 +81,83 @@ router.post("/", async (req, res) => {
                                 "verified": false,
                                 "expiresAt": expiresAt,
                                 "resetToken": uuid,});
+});
+
+// Endpoint for cashiers+ to create accounts for users
+router.post("/create", auth, async (req, res) => {
+    // Check if user is cashier or higher
+    if(req.auth.role === "regular") {
+        return res.status(403).json({"Message": "Forbidden: Only cashiers and above can create accounts"});
+    }
+
+    const {utorid, name, email, password, role} = req.body;
+    if(!utorid || !name || !email || !password) {
+        return res.status(400).json({"Message": "You must provide utorid, name, email, and password"});
+    }
+
+    let valid = alphaNum.test(utorid);
+    if(!valid || utorid.length < 7 || utorid.length > 8) {
+        return res.status(400).json({"Message": "UTORid must be alphanumeric and 7 - 8 characters long"});
+    }
+
+    if(name.length < 1 || name.length > 50) {
+        return res.status(400).json({"Message": "Name must be less than 50 characters"});
+    }
+
+    valid = emailRegex.test(email);
+    if(!valid) {
+        return res.status(400).json({"Message": "Not a valid email"});
+    }
+    valid = passwordRegex.test(password);
+    if(!valid) {
+        return res.status(400).json({"Message": "Password must be alphanumeric and 8 - 128 characters long. Must include an uppercase letter and special character"});
+    }
+
+    // Validate role if provided
+    const validRoles = ['regular', 'cashier', 'manager', 'superuser'];
+    let userRole = role || 'regular';
+    if(!validRoles.includes(userRole)) {
+        return res.status(400).json({"Message": "Invalid role"});
+    }
+
+    // Role restrictions: cashiers can only create regular users, managers can create regular/cashier, superusers can create any
+    if(req.auth.role === "cashier" && userRole !== "regular") {
+        return res.status(403).json({"Message": "Cashiers can only create regular user accounts"});
+    }
+    if(req.auth.role === "manager" && !['regular', 'cashier'].includes(userRole)) {
+        return res.status(403).json({"Message": "Managers can only create regular and cashier accounts"});
+    }
+
+    const existing = await prisma.user.findUnique({
+        where: {
+            utorid: utorid
+        }
+    });
+
+    if(existing) {
+        return res.status(409).json({"Message": "Username not available"});
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const created = await prisma.user.create({
+        data: {
+            utorid: utorid,
+            name: name,
+            email: email,
+            password: hashedPassword,
+            role: userRole,
+            activated: true  // Accounts created by staff are activated
+        }
+    });
+
+    return res.status(201).json({
+        "id": created.id,
+        "utorid": created.utorid,
+        "name": created.name,
+        "email": created.email,
+        "role": created.role,
+        "verified": created.verified,
+        "activated": created.activated
+    });
 });
 
 router.get("/", auth, async (req, res) => {

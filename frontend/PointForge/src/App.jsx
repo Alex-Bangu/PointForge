@@ -20,6 +20,7 @@ import Users from "./pages/users.jsx";
 import { UserProvider } from "./contexts/UserContext.jsx";
 import { LanguageProvider } from "./contexts/LanguageContext.jsx";
 import { ColorblindModeProvider } from "./contexts/ColorblindModeContext.jsx";
+import { InterfaceViewProvider } from "./contexts/InterfaceViewContext.jsx";
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <LanguageProvider>
                 <ColorblindModeProvider>
                     <UserProvider>
+                        <InterfaceViewProvider>
                         <Routes>
                     <Route path="/" element={<Navigate to="/login" replace/>}/>
                     <Route path="/login" element={<LoginLayout/>}>
@@ -50,6 +52,7 @@ function App() {
                         <Route path="cashier/process-redemption" element={<CashierProcessRedemption/>}/>
                     </Route>
                 </Routes>
+                        </InterfaceViewProvider>
                     </UserProvider>
                 </ColorblindModeProvider>
             </LanguageProvider>

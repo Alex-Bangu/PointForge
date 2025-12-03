@@ -30,6 +30,8 @@ function Users() {
     const { user } = useContext(UserContext);
     const { t } = useLanguage();
     const isManager = user?.role === 'manager' || user?.role === 'superuser';
+    const isCashier = user?.role === 'cashier';
+    const canCreateAccounts = isCashier || isManager; // Cashiers+ can create accounts
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -51,6 +53,16 @@ function Users() {
     const [toast, setToast] = useState('');
     const [detailModalOpen, setDetailModalOpen] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
+    const [createAccountModalOpen, setCreateAccountModalOpen] = useState(false);
+    const [createAccountForm, setCreateAccountForm] = useState({
+        utorid: '',
+        name: '',
+        email: '',
+        password: '',
+        role: 'regular'
+    });
+    const [createAccountError, setCreateAccountError] = useState('');
+    const [createAccountLoading, setCreateAccountLoading] = useState(false);
 
     // Auto-hide toast messages after 4 seconds
     useEffect(() => {
@@ -147,7 +159,7 @@ function Users() {
             }
         };
 
-        // Only fetch if user is manager or superuser
+        // Only fetch if user is manager or superuser (cashiers can create but not view all)
         if (isManager) {
             fetchUsers();
         }
@@ -177,6 +189,44 @@ function Users() {
             [key]: value
         }));
         setPage(1);
+    };
+
+    // Handle creating a new account
+    const handleCreateAccount = async (e) => {
+        e.preventDefault();
+        setCreateAccountError('');
+        setCreateAccountLoading(true);
+
+        try {
+            const response = await authenticatedFetch('/users/create', {
+                method: 'POST',
+                body: JSON.stringify(createAccountForm)
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.Message || data.message || 'Failed to create account');
+            }
+
+            setToast('Account created successfully!');
+            setCreateAccountModalOpen(false);
+            setCreateAccountForm({
+                utorid: '',
+                name: '',
+                email: '',
+                password: '',
+                role: 'regular'
+            });
+            
+            // Refresh user list if manager
+            if (isManager) {
+                setRefreshKey((key) => key + 1);
+            }
+        } catch (err) {
+            setCreateAccountError(err.message || 'Failed to create account');
+        } finally {
+            setCreateAccountLoading(false);
+        }
     };
 
 
@@ -234,11 +284,11 @@ function Users() {
         );
     };
 
-    // If not manager, show access denied
-    if (!isManager) {
+    // If not cashier or manager, show access denied
+    if (!canCreateAccounts) {
         return (
             <div className="users-page container">
-                <Error error="Access denied. Only managers and superusers can view this page." />
+                <Error error="Access denied. Only cashiers and above can access this page." />
             </div>
         );
     }
@@ -253,6 +303,11 @@ function Users() {
                 </div>
                 <div className="page-actions">
                     {toast && <span className="toast">{toast}</span>}
+                    {canCreateAccounts && (
+                        <button className="primary-btn" onClick={() => setCreateAccountModalOpen(true)}>
+                            Create Account
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -300,17 +355,29 @@ function Users() {
             {/* Error message display */}
             {error && <Error error={error} />}
 
-            {/* Main content area: loading, empty state, or users grid */}
-            {loading ? (
-                <Loading message="Loading users..." />
-            ) : data.results.length === 0 ? (
-                <div className="users-empty">
-                    <EmptyState message="No users found matching your filters" />
+            {/* Show message for cashiers who can't view all users */}
+            {isCashier && !isManager && (
+                <div className="users-info-message">
+                    <p>As a cashier, you can create accounts for users. Use the "Create Account" button above.</p>
+                    <p>Only managers and superusers can view the full user list.</p>
                 </div>
-            ) : (
-                <section className="users-grid">
-                    {data.results.map(renderUserCard)}
-                </section>
+            )}
+
+            {/* Main content area: loading, empty state, or users grid */}
+            {isManager && (
+                <>
+                    {loading ? (
+                        <Loading message="Loading users..." />
+                    ) : data.results.length === 0 ? (
+                        <div className="users-empty">
+                            <EmptyState message="No users found matching your filters" />
+                        </div>
+                    ) : (
+                        <section className="users-grid">
+                            {data.results.map(renderUserCard)}
+                        </section>
+                    )}
+                </>
             )}
 
             {/* Pagination controls */}
@@ -346,6 +413,125 @@ function Users() {
                 }}
                 onUserUpdated={() => setRefreshKey((key) => key + 1)}
             />
+
+            {/* Create Account Modal */}
+            {createAccountModalOpen && (
+                <div className="modal-overlay" onClick={() => setCreateAccountModalOpen(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Create New Account</h2>
+                            <button className="modal-close" onClick={() => setCreateAccountModalOpen(false)}>×</button>
+                        </div>
+                        {createAccountError && <Error error={createAccountError} />}
+                        <form onSubmit={handleCreateAccount} className="account-form">
+                            <div className="account-form-group">
+                                <label htmlFor="create-utorid">
+                                    UTORid <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="create-utorid"
+                                    value={createAccountForm.utorid}
+                                    onChange={(e) => setCreateAccountForm({ ...createAccountForm, utorid: e.target.value })}
+                                    required
+                                    minLength={7}
+                                    maxLength={8}
+                                    pattern="[a-zA-Z0-9]+"
+                                    disabled={createAccountLoading}
+                                />
+                                <small>7-8 alphanumeric characters</small>
+                            </div>
+                            <div className="account-form-group">
+                                <label htmlFor="create-name">
+                                    Name <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="create-name"
+                                    value={createAccountForm.name}
+                                    onChange={(e) => setCreateAccountForm({ ...createAccountForm, name: e.target.value })}
+                                    required
+                                    maxLength={50}
+                                    disabled={createAccountLoading}
+                                />
+                            </div>
+                            <div className="account-form-group">
+                                <label htmlFor="create-email">
+                                    Email <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    id="create-email"
+                                    value={createAccountForm.email}
+                                    onChange={(e) => setCreateAccountForm({ ...createAccountForm, email: e.target.value })}
+                                    required
+                                    pattern=".+@mail\.utoronto\.ca"
+                                    disabled={createAccountLoading}
+                                />
+                                <small>Must be @mail.utoronto.ca</small>
+                            </div>
+                            <div className="account-form-group">
+                                <label htmlFor="create-password">
+                                    Password <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="password"
+                                    id="create-password"
+                                    value={createAccountForm.password}
+                                    onChange={(e) => setCreateAccountForm({ ...createAccountForm, password: e.target.value })}
+                                    required
+                                    minLength={8}
+                                    disabled={createAccountLoading}
+                                />
+                                <small>At least 8 characters with uppercase, lowercase, number, and special character</small>
+                            </div>
+                            {isManager && (
+                                <div className="account-form-group">
+                                    <label htmlFor="create-role">
+                                        Role
+                                    </label>
+                                    <select
+                                        id="create-role"
+                                        value={createAccountForm.role}
+                                        onChange={(e) => setCreateAccountForm({ ...createAccountForm, role: e.target.value })}
+                                        disabled={createAccountLoading}
+                                    >
+                                        <option value="regular">Regular</option>
+                                        {isManager && (
+                                            <>
+                                                <option value="cashier">Cashier</option>
+                                                {user?.role === 'superuser' && (
+                                                    <>
+                                                        <option value="manager">Manager</option>
+                                                        <option value="superuser">Superuser</option>
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+                                    </select>
+                                </div>
+                            )}
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    className="secondary-btn"
+                                    onClick={() => setCreateAccountModalOpen(false)}
+                                    disabled={createAccountLoading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="primary-btn"
+                                    disabled={createAccountLoading}
+                                >
+                                    {createAccountLoading ? 'Creating...' : 'Create Account'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -4,10 +4,12 @@ import {useState, useEffect, useContext} from "react";
 import {Error} from "./index.js";
 import {UserContext} from "../contexts/UserContext.jsx";
 import {useLanguage} from "../contexts/LanguageContext.jsx";
+import {useInterfaceView} from "../contexts/InterfaceViewContext.jsx";
 import {isActive} from "../utils/dateUtils.js";
 
 const DashboardLayout = () => {
     const {user} = useContext(UserContext);
+    const {effectiveRole} = useInterfaceView();
     const {t} = useLanguage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [hamburgerVisible, setHamburgerVisible] = useState(true);
@@ -24,10 +26,13 @@ const DashboardLayout = () => {
         { path: '/dashboard/users', label: t('nav.users') },
     ];
 
-    const role = user?.role ?? 'regular';
+    // Use effectiveRole from InterfaceViewContext (which respects interface switching)
+    const role = effectiveRole ?? user?.role ?? 'regular';
     const isRegular = role === 'regular';
     const isCashier = role === 'cashier';
     const isManagerOrSuperuser = role === 'manager' || role === 'superuser';
+    // Cashiers and higher can see Users page (for account creation)
+    const canViewUsers = isCashier || isManagerOrSuperuser;
     const name = user?.name ?? '';
     const email = user?.email ?? '';
     const birthday = user?.birthday ?? '';
@@ -102,7 +107,7 @@ const DashboardLayout = () => {
                                         (item.path === '/dashboard' && location.pathname === '/dashboard/');
                         
                         // Role-based filtering
-                        if (!isManagerOrSuperuser && item.path === '/dashboard/users') {
+                        if (!canViewUsers && item.path === '/dashboard/users') {
                             return null;
                         }
                         if (item.roles && !item.roles.includes(role)) {
@@ -151,7 +156,7 @@ const DashboardLayout = () => {
                 <ul className="sidebar-nav">
                     {NAVIGATION_ITEMS.map((item) => {
                         // Role-based filtering
-                        if (!isManagerOrSuperuser && item.path === '/dashboard/users') {
+                        if (!canViewUsers && item.path === '/dashboard/users') {
                             return null;
                         }
                         if (item.roles && !item.roles.includes(role)) {
