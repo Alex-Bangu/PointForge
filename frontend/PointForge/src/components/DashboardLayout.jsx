@@ -23,6 +23,7 @@ const DashboardLayout = () => {
         { path: '/dashboard/events', label: t('nav.events') },
         { path: '/dashboard/promotions', label: t('nav.promotions') },
         { path: '/dashboard/qrcode', label: t('nav.qrcode'), roles: ['regular'] },
+        { path: '/dashboard/redemption', label: t('nav.redemption'), roles: ['regular'] },
         { path: '/dashboard/users', label: t('nav.users') },
     ];
 
