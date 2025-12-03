@@ -123,18 +123,24 @@ router.post("/tokens", async (req, res) => {
         // Set httpOnly cookie with JWT token
         const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT;
         
-        // For localhost development: sameSite must be 'lax' or 'strict' (can't use 'none' without secure: true)
-        // 'lax' should work for same-site requests (localhost:5173 -> localhost:3000)
+        // Cookie configuration:
+        // - Localhost: sameSite: 'lax' works for same-site requests (localhost:5173 -> localhost:3000)
+        // - Production (cross-domain): sameSite: 'none' + secure: true required for cross-domain cookies
         const cookieOptions = {
             httpOnly: true, // Prevents JavaScript access (XSS protection)
-            secure: isProduction, // Only send over HTTPS in production
-            sameSite: 'lax', // Works for same-site requests (localhost is considered same-site)
+            secure: isProduction, // Required for sameSite: 'none' in production
+            sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-domain, 'lax' for same-domain
             maxAge: 30 * 60 * 1000, // 30 minutes (matches JWT expiration)
             path: '/', // Available to all routes
-            // Don't set domain - allows cookie to work for localhost on any port
+            // Don't set domain - allows cookie to work across subdomains
         };
         
         res.cookie('token', token, cookieOptions);
+        
+        // Debug logging for production
+        if (isProduction) {
+            console.log(`[AUTH] Cookie set with sameSite=none, secure=true for cross-domain support`);
+        }
         
         console.log(`[AUTH] Login successful. utorid: ${utorid}, userId: ${user.id}, role: ${user.role}`);
         // Return expiresAt but NOT the token (it's in httpOnly cookie)
@@ -294,11 +300,13 @@ router.post("/resets/:resetToken", async (req, res) => {
 
 // Logout endpoint - clears httpOnly cookie
 router.post("/logout", (req, res) => {
-    // Clear the httpOnly cookie
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT;
+    
+    // Clear the httpOnly cookie with same settings as when it was set
     res.clearCookie('token', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT,
-        sameSite: 'lax',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/'
     });
     

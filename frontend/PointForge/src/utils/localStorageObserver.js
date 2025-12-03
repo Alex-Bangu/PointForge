@@ -1,11 +1,9 @@
 /**
  * localStorage Observer Utility
  * 
- * NOTE: This utility is deprecated. We now use httpOnly cookies for authentication,
- * so we don't need to observe localStorage token changes.
+ * DEPRECATED: This utility is no longer used. We now use httpOnly cookies for authentication.
  * 
- * This file is kept for backward compatibility but does nothing.
- * It will be removed in a future version.
+ * This file exists for backward compatibility only and does nothing.
  */
 
 /**
@@ -14,7 +12,6 @@
  */
 export function initLocalStorageObserver() {
     // No-op: We use httpOnly cookies now, so localStorage observation is not needed
-    // This function exists for backward compatibility only
     return;
 }
 
