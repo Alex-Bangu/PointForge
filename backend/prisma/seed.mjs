@@ -112,8 +112,13 @@ async function main() {
   const manager1Id = userMap['manager1'].id;
   const cashier1Id = userMap['cashier1'].id;
   const regular1Id = userMap['reguser1'].id;
+  const regular2Id = userMap['reguser2'].id;
+  const regular3Id = userMap['reguser3'].id;
   const regular4Id = userMap['reguser4'].id;
   const regular5Id = userMap['reguser5'].id;
+  const regular6Id = userMap['reguser6'].id;
+  const regular7Id = userMap['reguser7'].id;
+  const regular8Id = userMap['reguser8'].id;
   const regular9Id = userMap['reguser9'].id;
   const regular10Id = userMap['reguser10'].id;
   const regular13Id = userMap['reguser13'].id;
@@ -235,7 +240,11 @@ async function main() {
   console.log(`Created ${promotions.length} promotions.`);
 
   const promo1Id = promotions[0].id; // Fall Bonus (Automatic)
+  const promo2Id = promotions[1].id; // Weekend Coffee (Automatic, Ended)
   const promo3Id = promotions[2].id; // Big Spender (Automatic)
+  const promo4Id = promotions[4].id; // Mid-Term Boost (Automatic)
+  const promo6Id = promotions[5].id; // High Min Spend (Automatic)
+  const promo7Id = promotions[6].id; // Points Only Auto (Automatic)
   const promo9Id = promotions[8].id;  // First Purchase (Onetime, Unused)
   const promo10Id = promotions[9].id; // Buy Two Get One (Onetime, Used by reguser1)
   const promo11Id = promotions[10].id; // VIP Upgrade (Onetime, Unused)
@@ -280,6 +289,42 @@ async function main() {
     { type: 'adjustment', spent: 0, amount: -120, issuerId: users[2].id, receiverId: regular4Id, createdBy: users[2].utorid, processed: true, relatedId: 4, remark: 'Correcting T4 over-award' },
     // T14: Adjustment (reguser5, superuser, related to T1 - random one)
     { type: 'adjustment', spent: 0, amount: 500, issuerId: superuserId, receiverId: regular5Id, createdBy: users[0].utorid, processed: true, relatedId: 1, remark: 'Welcome gift for unverified user' },
+    
+    // Additional transactions to meet requirement of at least 30 transactions with at least 2 of each type
+    // More Purchase Transactions
+    { type: 'purchase', spent: 15.50, amount: calculatePurchasePoints(15.50), issuerId: users[5].id, receiverId: regular2Id, createdBy: users[5].utorid, processed: true },
+    { type: 'purchase', spent: 42.75, amount: calculatePurchasePoints(42.75) + promotions[6].points, issuerId: users[6].id, receiverId: regular2Id, createdBy: users[6].utorid, processed: true, promotions: [{ id: promo7Id }] },
+    { type: 'purchase', spent: 8.25, amount: calculatePurchasePoints(8.25), issuerId: users[4].id, receiverId: regular3Id, createdBy: users[4].utorid, processed: true },
+    { type: 'purchase', spent: 55.00, amount: calculatePurchasePoints(55.00) + promotions[2].points, issuerId: users[5].id, receiverId: regular6Id, createdBy: users[5].utorid, processed: true, promotions: [{ id: promo3Id }] },
+    { type: 'purchase', spent: 20.00, amount: calculatePurchasePoints(20.00), issuerId: users[6].id, receiverId: regular7Id, createdBy: users[6].utorid, processed: true },
+    { type: 'purchase', spent: 100.00, amount: calculatePurchasePoints(100.00) + promotions[5].points, issuerId: users[5].id, receiverId: regular8Id, createdBy: users[5].utorid, processed: true, promotions: [{ id: promo6Id }] },
+    { type: 'purchase', spent: 12.50, amount: calculatePurchasePoints(12.50), issuerId: users[4].id, receiverId: regular9Id, createdBy: users[4].utorid, processed: true },
+    { type: 'purchase', spent: 35.25, amount: calculatePurchasePoints(35.25) + promotions[4].points, issuerId: users[6].id, receiverId: regular10Id, createdBy: users[6].utorid, processed: true, promotions: [{ id: promo4Id }] },
+    { type: 'purchase', spent: 75.50, amount: calculatePurchasePoints(75.50) + promotions[1].points + promotions[2].points, issuerId: users[5].id, receiverId: regular1Id, createdBy: users[5].utorid, processed: true, promotions: [{ id: promo2Id }, { id: promo3Id }] },
+    { type: 'purchase', spent: 28.00, amount: calculatePurchasePoints(28.00), issuerId: users[6].id, receiverId: regular4Id, createdBy: users[6].utorid, processed: true },
+    
+    // More Redemption Transactions
+    { type: 'redemption', spent: 0, amount: -200, issuerId: regular1Id, receiverId: regular1Id, createdBy: userMap['reguser1'].utorid, processed: false, remark: 'Pending redemption request' },
+    { type: 'redemption', spent: 0, amount: -300, issuerId: regular4Id, receiverId: regular4Id, createdBy: userMap['reguser4'].utorid, processed: true, processedBy: users[5].utorid, remark: 'Processed redemption' },
+    { type: 'redemption', spent: 0, amount: -150, issuerId: regular6Id, receiverId: regular6Id, createdBy: userMap['reguser6'].utorid, processed: true, processedBy: users[6].utorid, remark: 'Small redemption' },
+    
+    // More Transfer Transactions
+    { type: 'transfer', spent: 0, amount: -200, issuerId: regular1Id, receiverId: regular2Id, createdBy: userMap['reguser1'].utorid, processed: true, remark: 'Transfer to Bob' },
+    { type: 'transfer', spent: 0, amount: 200, issuerId: regular1Id, receiverId: regular2Id, createdBy: userMap['reguser1'].utorid, processed: true, remark: 'Received from Alice' },
+    { type: 'transfer', spent: 0, amount: -100, issuerId: regular4Id, receiverId: regular6Id, createdBy: userMap['reguser4'].utorid, processed: true, remark: 'Transfer to Fiona' },
+    { type: 'transfer', spent: 0, amount: 100, issuerId: regular4Id, receiverId: regular6Id, createdBy: userMap['reguser4'].utorid, processed: true, remark: 'Received from Diana' },
+    
+    // More Event Transactions
+    { type: 'event', spent: 0, amount: 250, issuerId: superuserId, receiverId: regular9Id, createdBy: users[0].utorid, processed: true, eventId: event1Id, remark: 'Event participation' },
+    { type: 'event', spent: 0, amount: 300, issuerId: superuserId, receiverId: regular5Id, createdBy: users[0].utorid, processed: true, eventId: event3Id, remark: 'Spring Gala attendance' },
+    { type: 'event', spent: 0, amount: 175, issuerId: manager1Id, receiverId: regular6Id, createdBy: users[1].utorid, processed: true, eventId: event2Id, remark: 'Workshop completion' },
+    { type: 'event', spent: 0, amount: 400, issuerId: superuserId, receiverId: regular8Id, createdBy: users[0].utorid, processed: true, eventId: event3Id, remark: 'VIP attendance' },
+    
+    // More Adjustment Transactions
+    { type: 'adjustment', spent: 0, amount: 100, issuerId: users[1].id, receiverId: regular2Id, createdBy: users[1].utorid, processed: true, remark: 'Bonus points' },
+    { type: 'adjustment', spent: 0, amount: -50, issuerId: users[2].id, receiverId: regular3Id, createdBy: users[2].utorid, processed: true, remark: 'Correction' },
+    { type: 'adjustment', spent: 0, amount: 250, issuerId: superuserId, receiverId: regular7Id, createdBy: users[0].utorid, processed: true, remark: 'Special promotion' },
+    { type: 'adjustment', spent: 0, amount: -75, issuerId: users[1].id, receiverId: regular8Id, createdBy: users[1].utorid, processed: true, remark: 'Account correction' },
   ];
 
   const transactions = [];
