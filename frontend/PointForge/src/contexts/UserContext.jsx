@@ -1,6 +1,6 @@
 import {createContext, useCallback, useEffect, useMemo, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import { API_BASE_URL, getAuthHeaders } from "../utils/api.js";
+import { API_BASE_URL, authenticatedFetch } from "../utils/api.js";
 import { useAuthToken } from "../hooks/useAuthToken.js";
 
 export const UserContext = createContext({
@@ -28,52 +28,35 @@ export function UserProvider({ children }) {
 
     const refreshUserData = useCallback(async () => {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        console.log("token: ", token);
-        if (!token) {
-            setUser(null);
-            setEvents([]);
-            setPromotions([]);
-            setTransactions([]);
-            setLoading(false); // Set loading to false so components don't get stuck
-            // Navigate immediately - but allow login sub-routes (register, forgot, etc.)
-            if (!window.location.pathname.startsWith('/login')) {
-                window.location.href = '/login';
-            }
-            return;
-        }
-
-        const headers = getAuthHeaders();
 
         try {
-            const userResponse = await fetch(`${API_BASE_URL}/users/me`, {
+            // Use authenticatedFetch which automatically includes httpOnly cookies
+            const userResponse = await authenticatedFetch('/users/me', {
                 method: 'GET',
-                headers,
             });
 
             if (!userResponse.ok) {
                 if (userResponse.status === 401) {
-                    // Token expired or invalid - clear everything
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('tokenExpiresAt');
+                    // Token expired or invalid - authenticatedFetch already handled logout
                     setUser(null);
                     setEvents([]);
                     setPromotions([]);
                     setTransactions([]);
                     setLoading(false);
-                    navigate('/login');
                     return;
                 }
                 setError('Failed to fetch user data');
+                setLoading(false);
+                return;
             }
 
             const userData = await userResponse.json();
             console.log(userData);
             setUser(userData);
 
-            const eventsResponse = await fetch(`${API_BASE_URL}/events`, {
+            // Fetch events, promotions, and transactions using authenticatedFetch
+            const eventsResponse = await authenticatedFetch('/events', {
                 method: 'GET',
-                headers,
             });
 
             if (eventsResponse.ok) {
@@ -81,9 +64,8 @@ export function UserProvider({ children }) {
                 setEvents(eventsData.results || []);
             }
 
-            const promotionsResponse = await fetch(`${API_BASE_URL}/promotions`, {
+            const promotionsResponse = await authenticatedFetch('/promotions', {
                 method: 'GET',
-                headers,
             });
 
             if (promotionsResponse.ok) {
@@ -91,9 +73,8 @@ export function UserProvider({ children }) {
                 setPromotions(promotionsData.results || []);
             }
 
-            const transactionsResponse = await fetch(`${API_BASE_URL}/users/me/transactions`, {
+            const transactionsResponse = await authenticatedFetch('/users/me/transactions', {
                 method: 'GET',
-                headers,
             });
 
             if (transactionsResponse.ok) {
@@ -108,7 +89,7 @@ export function UserProvider({ children }) {
 
         setLoading(false);
         console.log("The end")
-    }, [navigate]);
+    }, []);
 
     const resetUserData = useCallback(() => {
         setUser(null);
@@ -117,8 +98,7 @@ export function UserProvider({ children }) {
         setTransactions([]);
         setError('');
         setLoading(false);
-        // Also clear token expiration when resetting
-        localStorage.removeItem('tokenExpiresAt');
+        // No need to clear localStorage - token is in httpOnly cookie
     }, []);
 
     // Watch for token changes via custom events and storage events
@@ -131,37 +111,15 @@ export function UserProvider({ children }) {
             }
         };
 
-        const handleStorageChange = (e) => {
-            if (e.key === 'token') {
-                if (e.newValue) {
-                    refreshUserData();
-                } else {
-                    resetUserData();
-                }
-            }
-        };
-
         // Listen for custom token change events
         window.addEventListener('tokenChange', handleTokenChange);
-        // Listen for storage events (works across tabs)
-        window.addEventListener('storage', handleStorageChange);
 
-        // Check on mount
-        const token = localStorage.getItem('token');
-        if (token) {
-            refreshUserData();
-        } else {
-            // No token on mount - reset and navigate to login immediately
-            resetUserData();
-            // Only navigate if we're not already on login page or its sub-routes
-            if (!window.location.pathname.startsWith('/login') && window.location.pathname !== '/') {
-                navigate('/login');
-            }
-        }
+        // Check on mount - try to fetch user data (will fail if no cookie)
+        // authenticatedFetch will handle 401 and redirect to login
+        refreshUserData();
 
         return () => {
             window.removeEventListener('tokenChange', handleTokenChange);
-            window.removeEventListener('storage', handleStorageChange);
         };
     }, [refreshUserData, resetUserData]);
 

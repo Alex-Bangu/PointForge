@@ -56,9 +56,8 @@ function Redemption() {
                 })
             });
 
+            // authenticatedFetch handles 401 automatically
             if (response.status === 401) {
-                localStorage.removeItem('token');
-                window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                 throw new Error('Session expired. Please log in again.');
             }
 

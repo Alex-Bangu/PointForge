@@ -177,11 +177,8 @@ function Promotions() {
                     signal: controller.signal  // Allows cancellation
                 });
                 
-                // Handle expired session (401 Unauthorized)
-                // If token expired, clear it and log user out
+                // Handle expired session (authenticatedFetch handles logout automatically)
                 if(response.status === 401) {
-                    localStorage.removeItem('token');
-                    window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                     throw new Error('Session expired. Please log in again.');
                 }
                 
@@ -275,10 +272,8 @@ function Promotions() {
                 body: JSON.stringify(payload)
             });
             
-            // Handle expired session
+            // authenticatedFetch handles 401 automatically
             if(response.status === 401) {
-                localStorage.removeItem('token');
-                window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                 throw new Error('Session expired. Please log in again.');
             }
             
@@ -334,10 +329,8 @@ function Promotions() {
                 method: 'DELETE'
             });
             
-            // Handle expired session
+            // authenticatedFetch handles 401 automatically
             if(response.status === 401) {
-                localStorage.removeItem('token');
-                window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                 throw new Error('Session expired. Please log in again.');
             }
             
@@ -385,10 +378,8 @@ function Promotions() {
                 method: 'POST'
             });
             
-            // Handle expired session
+            // authenticatedFetch handles 401 automatically
             if(response.status === 401) {
-                localStorage.removeItem('token');
-                window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                 throw new Error('Session expired. Please log in again.');
             }
             

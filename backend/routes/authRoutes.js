@@ -119,8 +119,26 @@ router.post("/tokens", async (req, res) => {
         );
 
         const expiresAt = new Date(Date.now() + (30 * 60 * 1000)).toISOString();
+        
+        // Set httpOnly cookie with JWT token
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT;
+        
+        // For localhost development: sameSite must be 'lax' or 'strict' (can't use 'none' without secure: true)
+        // 'lax' should work for same-site requests (localhost:5173 -> localhost:3000)
+        const cookieOptions = {
+            httpOnly: true, // Prevents JavaScript access (XSS protection)
+            secure: isProduction, // Only send over HTTPS in production
+            sameSite: 'lax', // Works for same-site requests (localhost is considered same-site)
+            maxAge: 30 * 60 * 1000, // 30 minutes (matches JWT expiration)
+            path: '/', // Available to all routes
+            // Don't set domain - allows cookie to work for localhost on any port
+        };
+        
+        res.cookie('token', token, cookieOptions);
+        
         console.log(`[AUTH] Login successful. utorid: ${utorid}, userId: ${user.id}, role: ${user.role}`);
-        return res.status(200).json({token, expiresAt});
+        // Return expiresAt but NOT the token (it's in httpOnly cookie)
+        return res.status(200).json({expiresAt});
     } catch (error) {
         console.error(`[AUTH] Login attempt failed: Database error. utorid: ${utorid}`, error);
         return res.status(500).json({"Error": "Internal server error"});
@@ -273,5 +291,19 @@ router.post("/resets/:resetToken", async (req, res) => {
         return res.status(500).json({"message": "Internal server error"});
     }
 })
+
+// Logout endpoint - clears httpOnly cookie
+router.post("/logout", (req, res) => {
+    // Clear the httpOnly cookie
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT,
+        sameSite: 'lax',
+        path: '/'
+    });
+    
+    console.log(`[AUTH] Logout successful`);
+    return res.status(200).json({"message": "Logged out successfully"});
+});
 
 module.exports = router;

@@ -77,6 +77,7 @@ if (process.env.DATABASE_URL) {
 
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const {expressjwt: jwt} = require("express-jwt");
 const app = express();
 
@@ -142,6 +143,7 @@ app.use(cors({
 
 app.options('*', cors()); // allow preflight globally
 
+app.use(cookieParser()); // Parse cookies from requests
 app.use(express.json());
 
 // Health check endpoint for Railway
@@ -149,13 +151,26 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// JWT middleware - reads token from httpOnly cookie or Authorization header (for backward compatibility)
 app.use(jwt({
     secret: process.env.JWT_SECRET,
     algorithms: ["HS256"],
+    getToken: (req) => {
+        // First try to get token from httpOnly cookie
+        if (req.cookies && req.cookies.token) {
+            return req.cookies.token;
+        }
+        // Fallback to Authorization header (for backward compatibility during migration)
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            return req.headers.authorization.split(' ')[1];
+        }
+        return null;
+    }
 }).unless({
     path: [
         "/health",
         "/auth/tokens",
+        "/auth/logout",
         "/auth/resets",
         /^\/auth\/resets\/[^/]+$/,
         {url: "/users", method: ["POST"]}

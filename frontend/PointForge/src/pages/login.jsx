@@ -58,11 +58,12 @@ function Login() {
            return;
          }
         
-        localStorage.setItem('token', data.token);
-        // Store token expiration time for automatic logout
-        if (data.expiresAt) {
-            localStorage.setItem('tokenExpiresAt', data.expiresAt);
-        }
+        // Token is now stored in httpOnly cookie automatically by backend
+        // No need to store in localStorage
+        
+        // Small delay to ensure cookie is set before making authenticated requests
+        // This prevents race conditions where UserContext tries to fetch before cookie is available
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         // Dispatch custom event to notify UserContext to refresh
         window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'login' } }));

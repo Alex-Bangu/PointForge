@@ -119,9 +119,8 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                 method: 'POST'
             });
 
+            // authenticatedFetch handles 401 automatically
             if(response.status === 401) {
-                localStorage.removeItem('token');
-                window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                 throw new Error(t('error.sessionExpired'));
             }
 
@@ -176,9 +175,8 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                 method: 'DELETE'
             });
 
+            // authenticatedFetch handles 401 automatically
             if(response.status === 401) {
-                localStorage.removeItem('token');
-                window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                 throw new Error(t('error.sessionExpired'));
             }
 

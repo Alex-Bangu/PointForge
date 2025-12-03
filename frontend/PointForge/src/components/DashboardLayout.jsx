@@ -78,9 +78,20 @@ const DashboardLayout = () => {
         setSidebarOpen(false);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('tokenExpiresAt');
+    const handleLogout = async () => {
+        // Call logout endpoint to clear httpOnly cookie
+        try {
+            await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+        } catch (err) {
+            // Ignore errors - we're logging out anyway
+        }
+        
         // Dispatch custom event to notify UserContext
         window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
         setAccountDropdownOpen(false);

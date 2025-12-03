@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { API_BASE_URL, getAuthHeaders } from '../utils/api.js';
+import { authenticatedFetch } from '../utils/api.js';
 
 /**
  * Custom hook to fetch manager/superuser data (user summary and active promotions count)
@@ -45,19 +45,16 @@ export function useManagerData(user) {
             setLoading(true);
             setError('');
             try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    throw new Error('No authentication token');
-                }
-
-                const headers = getAuthHeaders();
-
                 // Fetch users to get total count and flagged users
-                const usersResponse = await fetch(`${API_BASE_URL}/users?limit=100&page=1`, {
-                    headers
+                const usersResponse = await authenticatedFetch('/users?limit=100&page=1', {
+                    method: 'GET'
                 });
 
                 if (!usersResponse.ok) {
+                    if (usersResponse.status === 401) {
+                        // authenticatedFetch handles logout automatically
+                        return;
+                    }
                     const errorData = await usersResponse.json().catch(() => ({}));
                     throw new Error(errorData.Message || `HTTP ${usersResponse.status}: Unable to load user overview`);
                 }
@@ -65,8 +62,8 @@ export function useManagerData(user) {
                 const usersData = await usersResponse.json();
                 
                 // Fetch promotions to get total count and active promotions list (for managers, get all active promotions)
-                const promotionsResponse = await fetch(`${API_BASE_URL}/promotions?limit=100&page=1&ended=false`, {
-                    headers
+                const promotionsResponse = await authenticatedFetch('/promotions?limit=100&page=1&ended=false', {
+                    method: 'GET'
                 });
 
                 let activePromosCount = 0;

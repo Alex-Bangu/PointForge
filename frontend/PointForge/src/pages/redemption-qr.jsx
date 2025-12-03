@@ -24,9 +24,8 @@ function RedemptionQR() {
                 try {
                     const response = await authenticatedFetch('/users/me/transactions?type=redemption&limit=50');
                     
+                    // authenticatedFetch handles 401 automatically
                     if (response.status === 401) {
-                        localStorage.removeItem('token');
-                        window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                         throw new Error('Session expired. Please log in again.');
                     }
 
@@ -62,9 +61,8 @@ function RedemptionQR() {
                 try {
                     const response = await authenticatedFetch(`/users/me/transactions?limit=1000`);
                     
+                    // authenticatedFetch handles 401 automatically
                     if (response.status === 401) {
-                        localStorage.removeItem('token');
-                        window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                         throw new Error('Session expired. Please log in again.');
                     }
 

@@ -123,10 +123,8 @@ function Users() {
                     signal: controller.signal
                 });
 
-                // Handle expired session
+                // Handle expired session (authenticatedFetch handles logout automatically)
                 if (response.status === 401) {
-                    localStorage.removeItem('token');
-                    window.dispatchEvent(new CustomEvent('tokenChange', { detail: { action: 'logout' } }));
                     throw new Error('Session expired. Please log in again.');
                 }
 
