@@ -156,13 +156,32 @@ app.use(jwt({
     secret: process.env.JWT_SECRET,
     algorithms: ["HS256"],
     getToken: (req) => {
+        // Debug logging for production
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT;
+        if (isProduction && req.path === '/users/me') {
+            console.log(`[JWT] Checking token for ${req.path}`);
+            console.log(`[JWT] Cookies received:`, req.cookies ? Object.keys(req.cookies) : 'none');
+            console.log(`[JWT] Origin: ${req.headers.origin || 'no-origin'}`);
+            console.log(`[JWT] Cookie header: ${req.headers.cookie || 'none'}`);
+        }
+        
         // First try to get token from httpOnly cookie
         if (req.cookies && req.cookies.token) {
+            if (isProduction && req.path === '/users/me') {
+                console.log(`[JWT] Token found in cookie`);
+            }
             return req.cookies.token;
         }
         // Fallback to Authorization header (for backward compatibility during migration)
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            if (isProduction && req.path === '/users/me') {
+                console.log(`[JWT] Token found in Authorization header`);
+            }
             return req.headers.authorization.split(' ')[1];
+        }
+        
+        if (isProduction && req.path === '/users/me') {
+            console.log(`[JWT] No token found in cookie or header`);
         }
         return null;
     }

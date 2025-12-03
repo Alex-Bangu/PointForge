@@ -79,6 +79,10 @@ const DashboardLayout = () => {
     };
 
     const handleLogout = async () => {
+        // Import clearAuthToken dynamically to avoid circular dependencies
+        const { clearAuthToken } = await import('../utils/api.js');
+        clearAuthToken();
+        
         // Call logout endpoint to clear httpOnly cookie
         try {
             await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/auth/logout`, {

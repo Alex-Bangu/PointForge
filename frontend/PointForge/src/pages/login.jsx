@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import { unauthenticatedFetch } from '../utils/api.js';
+import { unauthenticatedFetch, setAuthToken } from '../utils/api.js';
 import { Error } from '../components';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
 
@@ -58,8 +58,11 @@ function Login() {
            return;
          }
         
-        // Token is now stored in httpOnly cookie automatically by backend
-        // No need to store in localStorage
+        // Store token in memory for cross-domain fallback (if cookies don't work)
+        // Backend sets httpOnly cookie, but we also store token for Authorization header fallback
+        if (data.token) {
+            setAuthToken(data.token);
+        }
         
         // Small delay to ensure cookie is set before making authenticated requests
         // This prevents race conditions where UserContext tries to fetch before cookie is available

@@ -139,12 +139,21 @@ router.post("/tokens", async (req, res) => {
         
         // Debug logging for production
         if (isProduction) {
+            const origin = req.headers.origin || 'no-origin';
             console.log(`[AUTH] Cookie set with sameSite=none, secure=true for cross-domain support`);
+            console.log(`[AUTH] Request origin: ${origin}`);
+            console.log(`[AUTH] Cookie options:`, JSON.stringify(cookieOptions, null, 2));
         }
         
         console.log(`[AUTH] Login successful. utorid: ${utorid}, userId: ${user.id}, role: ${user.role}`);
-        // Return expiresAt but NOT the token (it's in httpOnly cookie)
-        return res.status(200).json({expiresAt});
+        
+        // Return token in response body as fallback for cross-domain scenarios
+        // Frontend will prefer cookie if available, otherwise use token from response
+        // This allows the app to work both same-domain (cookies) and cross-domain (headers)
+        return res.status(200).json({
+            expiresAt,
+            token: token // Include token for cross-domain fallback
+        });
     } catch (error) {
         console.error(`[AUTH] Login attempt failed: Database error. utorid: ${utorid}`, error);
         return res.status(500).json({"Error": "Internal server error"});
