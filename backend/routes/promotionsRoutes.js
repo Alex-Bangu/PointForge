@@ -244,10 +244,28 @@ router.get("/", auth, async (req, res) => {
     if(LOWER_ROLES.includes(role)) {
         const user = await prisma.user.findUnique({
             where: { id: req.auth.id },
-            select: { promotions: { select: { id: true } } }
+            select: { 
+                promotions: { select: { id: true } },
+                receivedTransactions: {
+                    select: {
+                        promotions: { select: { id: true } }
+                    }
+                }
+            }
         });
+        
+        // Promotions currently in wallet
         if(user?.promotions) {
-            usedPromotionIds = new Set(user.promotions.map(promo => promo.id));
+            user.promotions.forEach(promo => usedPromotionIds.add(promo.id));
+        }
+        
+        // Promotions that were used in transactions (even if removed from wallet)
+        if(user?.receivedTransactions) {
+            user.receivedTransactions.forEach(transaction => {
+                if(transaction.promotions) {
+                    transaction.promotions.forEach(promo => usedPromotionIds.add(promo.id));
+                }
+            });
         }
     }
 
@@ -375,7 +393,26 @@ router.get("/:promotionId", auth, async (req, res) => {
     const isUpcoming = startMs > now;
     const hasEnded = now >= endMs;
     const isOneTime = promotion.type === "onetime";
-    const alreadyUsed = isOneTime && promotion.users.some((user) => user.id === req.auth.id);
+    
+    // Check if promotion is already used: either in wallet OR used in a transaction
+    let alreadyUsed = false;
+    if (isOneTime && LOWER_ROLES.includes(req.auth.role)) {
+        // Check if in wallet
+        const inWallet = promotion.users.some((user) => user.id === req.auth.id);
+        
+        // Check if used in any transaction
+        const transactionWithPromotion = await prisma.transaction.findFirst({
+            where: {
+                receiverId: req.auth.id,
+                promotions: {
+                    some: { id: promotionId }
+                }
+            }
+        });
+        
+        alreadyUsed = inWallet || !!transactionWithPromotion;
+    }
+    
     const usable = isActive && (!isOneTime || !alreadyUsed);
 
     const response = {
@@ -431,9 +468,22 @@ router.post("/:promotionId/use", auth, async (req, res) => {
     if(endMs <= now) {
         return res.status(409).json({"message": "Promotion has ended"});
     }
-    const alreadyUsed = promotion.users.some((user) => user.id === req.auth.id);
+    // Check if promotion is already in wallet
+    const inWallet = promotion.users.some((user) => user.id === req.auth.id);
+    
+    // Check if promotion was already used in a transaction
+    const transactionWithPromotion = await prisma.transaction.findFirst({
+        where: {
+            receiverId: req.auth.id,
+            promotions: {
+                some: { id: promotionId }
+            }
+        }
+    });
+    
+    const alreadyUsed = inWallet || !!transactionWithPromotion;
     if(alreadyUsed) {
-        return res.status(409).json({"message": "Promotion already applied"});
+        return res.status(409).json({"message": "Promotion already applied or already used"});
     }
     await prisma.promotion.update({
         where: { id: promotionId },
