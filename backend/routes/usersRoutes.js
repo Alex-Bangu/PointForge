@@ -320,7 +320,44 @@ router.get("/me", auth, async (req, res) => {
     })
 });
 
-// Endpoint for cashiers to search users by UTORid
+// Endpoint for regular users to search users by UTORid (for transfers)
+// MUST be before /search/:utorid route to avoid route conflicts
+router.get("/search-transfer/:utorid", auth, async (req, res) => {
+    if(req.auth.role !== "regular") {
+        return res.status(403).json({"Message": "Forbidden: This endpoint is for regular users only"});
+    }
+    
+    const utorid = req.params.utorid;
+    if(!utorid) {
+        return res.status(400).json({"Message": "Bad request"});
+    }
+    
+    const user = await prisma.user.findUnique({
+        where: {
+            utorid: utorid
+        },
+        select: {
+            id: true,
+            utorid: true,
+            name: true,
+            email: true,
+            points: true
+        }
+    });
+
+    if(!user) {
+        return res.status(404).json({"Message": "User Not Found"});
+    }
+
+    // Can't transfer to yourself
+    if(user.id === req.auth.id) {
+        return res.status(400).json({"Message": "Cannot transfer to yourself"});
+    }
+
+    return res.status(200).json(user);
+});
+
+// Endpoint for cashiers/managers to search users by UTORid
 // MUST be before /:userId route to avoid route conflicts
 router.get("/search/:utorid", auth, async (req, res) => {
     if(req.auth.role === "regular") {

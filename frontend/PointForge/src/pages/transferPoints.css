@@ -1,0 +1,233 @@
+.transfer-points {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.transfer-points .page-header {
+    margin-bottom: 2rem;
+    display: inline-block;
+    width: fit-content;
+    background-color: #014530;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.transfer-points .page-header:hover {
+    transform: translateY(-2px);
+}
+
+.transfer-points .page-header h1 {
+    color: #B8860B;
+    margin: 0 0 0.5rem 0;
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.transfer-points .page-header p {
+    color: #B0B0B0;
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+.current-balance {
+    background-color: #014530;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(184, 134, 11, 0.3);
+}
+
+.current-balance p {
+    color: #B0B0B0;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.current-balance strong {
+    color: #B8860B;
+}
+
+.transfer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-section {
+    background-color: #014530;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.form-section h2 {
+    color: #B8860B;
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    color: #B0B0B0;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-group .required {
+    color: #ff6b6b;
+    margin-left: 0.25rem;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background-color: #023020;
+    color: #ffffff;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #B8860B;
+    background-color: #023a25;
+}
+
+.form-group input:disabled,
+.form-group textarea:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-group textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.form-hint {
+    color: #888;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.searching-indicator {
+    color: #B8860B;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.error-text {
+    color: #ff6b6b;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.receiver-info {
+    background-color: #023020;
+    border: 1px solid rgba(184, 134, 11, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+.receiver-info p {
+    color: #B0B0B0;
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.receiver-info p:first-child {
+    margin-top: 0;
+}
+
+.receiver-info p:last-child {
+    margin-bottom: 0;
+}
+
+.receiver-info strong {
+    color: #B8860B;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.submit-btn,
+.cancel-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submit-btn {
+    background-color: #B8860B;
+    color: #014530;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background-color: #d4a017;
+    transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cancel-btn {
+    background-color: #444;
+    color: #ffffff;
+}
+
+.cancel-btn:hover:not(:disabled) {
+    background-color: #555;
+}
+
+.success-message {
+    background-color: #014530;
+    border: 1px solid rgba(76, 175, 80, 0.5);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #4CAF50;
+}
+
+.success-message p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.success-message p:first-child {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+

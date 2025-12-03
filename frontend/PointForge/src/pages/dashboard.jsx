@@ -229,6 +229,19 @@ function Dashboard() {
 
             {isManagerOrSuperuser && (
                 <section className="manager-overview">
+                    <div className="manager-tools">
+                        <div>
+                            <h2>Manager Tools</h2>
+                        </div>
+                        <div className="manager-card-grid">
+                            <article className="manager-card">
+                                <button onClick={() => navigate('/dashboard/manager/create-adjustment')}>
+                                    Create Adjustment
+                                </button>
+                                <p>Add or subtract points from a user's account</p>
+                            </article>
+                        </div>
+                    </div>
                     <div className="gridLayout manager-grid">
                         <div className="gridItem overview-card">
                             <div className="card-text">

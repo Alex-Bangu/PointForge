@@ -13,6 +13,8 @@ import Redemption from './pages/redemption';
 import RedemptionQR from './pages/redemption-qr';
 import CashierCreatePurchase from './pages/cashierCreatePurchase.jsx';
 import CashierProcessRedemption from './pages/cashierProcessRedemption.jsx';
+import ManagerCreateAdjustment from './pages/managerCreateAdjustment.jsx';
+import TransferPoints from './pages/transferPoints.jsx';
 import { LoginLayout, DashboardLayout } from "./components";
 import Register from "./pages/register.jsx";
 import Forgot from "./pages/forgot.jsx";
@@ -50,6 +52,8 @@ function App() {
                         <Route path="redemption-qr/:transactionId?" element={<RedemptionQR/>}/>
                         <Route path="cashier/create-purchase" element={<CashierCreatePurchase/>}/>
                         <Route path="cashier/process-redemption" element={<CashierProcessRedemption/>}/>
+                        <Route path="manager/create-adjustment" element={<ManagerCreateAdjustment/>}/>
+                        <Route path="transfer" element={<TransferPoints/>}/>
                     </Route>
                 </Routes>
                         </InterfaceViewProvider>

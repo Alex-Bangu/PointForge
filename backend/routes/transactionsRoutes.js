@@ -63,13 +63,42 @@ const calculatePromotionPoints = (promotion, spent) => {
 };
 
 router.post('/', auth, async (req, res) => {
-    const transactionTypes = ["purchase", "adjustment"];
-    if(req.auth.role === "regular") {
+    const transactionTypes = ["purchase", "adjustment", "transfer"];
+    const higherRoles = ["manager", "superuser"];
+    
+    // Regular users can only create transfer transactions
+    if(req.auth.role === "regular" && req.body.type !== "transfer") {
         return res.status(403).json({"Message": "Forbidden"});
     }
-    let {utorid, type, spent, promotionIds, remark, relatedId, amount} = req.body;
-    if(!utorid || !type || (!spent && !amount)) {
-        return res.status(400).json({"Message": "Bad request"});
+    
+    // Only managers can create adjustment transactions
+    if(req.body.type === "adjustment" && !higherRoles.includes(req.auth.role)) {
+        return res.status(403).json({"Message": "Forbidden: Only managers can create adjustment transactions"});
+    }
+    
+    let {utorid, type, spent, promotionIds, remark, relatedId, amount, receiverUtorid} = req.body;
+    
+    // Validation for different transaction types
+    if(type === "transfer") {
+        // Transfer requires receiverUtorid and amount
+        if(!receiverUtorid || !amount) {
+            return res.status(400).json({"Message": "Bad request: Transfer requires receiverUtorid and amount"});
+        }
+        if(req.auth.role !== "regular") {
+            return res.status(403).json({"Message": "Forbidden: Only regular users can create transfer transactions"});
+        }
+    } else if(type === "adjustment") {
+        // Adjustment requires utorid and amount (optional relatedId)
+        if(!utorid || !amount) {
+            return res.status(400).json({"Message": "Bad request: Adjustment requires utorid and amount"});
+        }
+    } else if(type === "purchase") {
+        // Purchase requires utorid and spent
+        if(!utorid || !spent) {
+            return res.status(400).json({"Message": "Bad request: Purchase requires utorid and spent"});
+        }
+    } else {
+        return res.status(400).json({"Message": "Bad request: Invalid transaction type"});
     }
     
     if(spent !== undefined && spent !== null) {
@@ -81,6 +110,84 @@ router.post('/', auth, async (req, res) => {
     if(promotionIds === null) {
         promotionIds = [];
     }
+    
+    // Handle transfer transactions (regular users transferring to another user)
+    if(type === "transfer") {
+        const amountNum = parseInt(amount);
+        if(isNaN(amountNum) || amountNum <= 0) {
+            return res.status(400).json({"Message": "Bad request: Amount must be a positive integer"});
+        }
+        
+        // Get sender (current user)
+        const sender = await prisma.user.findUnique({
+            where: { id: req.auth.id }
+        });
+        if(!sender) {
+            return res.status(404).json({"Message": "Sender not found"});
+        }
+        
+        // Check if sender has enough points
+        if(sender.points < amountNum) {
+            return res.status(400).json({"Message": "Insufficient points"});
+        }
+        
+        // Get receiver
+        const receiver = await prisma.user.findUnique({
+            where: { utorid: receiverUtorid }
+        });
+        if(!receiver) {
+            return res.status(404).json({"Message": "Receiver not found"});
+        }
+        
+        // Can't transfer to yourself
+        if(sender.id === receiver.id) {
+            return res.status(400).json({"Message": "Cannot transfer points to yourself"});
+        }
+        
+        // Create transfer transaction
+        const transaction = await prisma.transaction.create({
+            data: {
+                type: "transfer",
+                spent: 0,
+                amount: amountNum,
+                remark: remark || "",
+                suspicious: false,
+                createdBy: sender.utorid,
+                issuerId: sender.id,
+                receiverId: receiver.id
+            }
+        });
+        
+        // Update sender points (deduct)
+        await prisma.user.update({
+            where: { id: sender.id },
+            data: {
+                points: { decrement: amountNum },
+                issuedTransactions: { connect: { id: transaction.id } }
+            }
+        });
+        
+        // Update receiver points (add)
+        await prisma.user.update({
+            where: { id: receiver.id },
+            data: {
+                points: { increment: amountNum },
+                receivedTransactions: { connect: { id: transaction.id } }
+            }
+        });
+        
+        return res.status(201).json({
+            "id": transaction.id,
+            "type": "transfer",
+            "amount": amountNum,
+            "senderUtorid": sender.utorid,
+            "receiverUtorid": receiver.utorid,
+            "remark": remark || "",
+            "createdBy": sender.utorid
+        });
+    }
+    
+    // Handle adjustment and purchase transactions (managers/cashiers only)
     if(relatedId) {
         if(req.auth.role === "cashier") {
             return res.status(403).json({"Message": "Forbidden"});
