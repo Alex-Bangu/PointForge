@@ -23,6 +23,8 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
     const { t } = useLanguage();
     const isOrganizer = user?.organizedEvents.some((u) => u.id === eventId);
     const isManager = user?.role === 'manager' || user?.role === 'superuser';
+    console.log("isOrganizer: ", isOrganizer);
+    console.log("isManager: ", isManager);
 
     // State for the event data being displayed
     const [event, setEvent] = useState(null);
@@ -129,7 +131,6 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
             if(contentType && contentType.includes('application/json')) {
                 payload = await response.json();
             } else {
-                const text = await response.text();
                 throw new Error(`Server error: ${response.status} ${response.statusText}`);
             }
 
@@ -179,6 +180,8 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
             if(response.status === 401) {
                 throw new Error(t('error.sessionExpired'));
             }
+
+            const payload = response.body;
 
             if(!response.ok) {
                 console.log("unable");
@@ -254,6 +257,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                 throw new Error(errorMessage);
             }
         } catch (err) {
+            console.log(err);
             return 1;
         } finally {
             setModalBusy(false);
@@ -326,6 +330,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                 }
             }
         } catch (err) {
+            console.log(err);
             return 1;
         } finally {
             setModalBusy(false);
@@ -494,9 +499,9 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                     )}
 
                     {/* Manager view: user statistics and status */}
-                    {isManager || isOrganizer && (
+                    {(isManager || isOrganizer) && (
                         <>
-                            <span>{event.guests.length || 0} {t('eventDetail.guestsRSVP')}</span>
+                            <span>{event.guests.length} {t('eventDetail.guestsRSVP')}</span>
                             <p>{t('eventDetail.guests')} </p>
                             {event.guests.map((guest, index) => (
                                 <span key={index}>{guest.utorid}</span>
