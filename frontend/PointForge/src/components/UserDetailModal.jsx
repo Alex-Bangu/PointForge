@@ -59,7 +59,7 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
 
                 // authenticatedFetch handles 401 automatically
                 if (response.status === 401) {
-                    throw new Error('Session expired. Please log in again.');
+                    throw new Error(t('error.sessionExpired'));
                 }
 
                 const contentType = response.headers.get('content-type');
@@ -68,18 +68,18 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                     payload = await response.json();
                 } else {
                     const text = await response.text();
-                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                    throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
                 }
 
                 if (!response.ok) {
-                    throw new Error(payload.message || payload.Message || 'Unable to load user');
+                    throw new Error(payload.message || payload.Message || t('error.unableToLoadUser'));
                 }
                 setUser(payload);
             } catch (err) {
                 if (err.name === 'AbortError') {
                     return;
                 }
-                setError(err.message || 'Unable to load user');
+                setError(err.message || t('error.unableToLoadUser'));
             } finally {
                 setLoading(false);
             }
@@ -129,7 +129,7 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
             }
 
             if (Object.keys(updates).length === 0) {
-                setSaveError('No changes to save');
+                setSaveError(t('error.noChangesToSave'));
                 setSaving(false);
                 return;
             }
@@ -141,7 +141,7 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
 
             // authenticatedFetch handles 401 automatically
             if (response.status === 401) {
-                throw new Error('Session expired. Please log in again.');
+                throw new Error(t('error.sessionExpired'));
             }
 
             const contentType = response.headers.get('content-type');
@@ -150,17 +150,17 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                 payload = await response.json();
             } else {
                 const text = await response.text();
-                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
             }
 
             if (!response.ok) {
-                throw new Error(payload.message || payload.Message || 'Unable to update user');
+                throw new Error(payload.message || payload.Message || t('error.unableToUpdateUser'));
             }
 
             setIsEditing(false);
             refresh();
         } catch (err) {
-            setSaveError(err.message || 'Unable to update user');
+            setSaveError(err.message || t('error.unableToUpdateUser'));
         } finally {
             setSaving(false);
         }
@@ -202,12 +202,12 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
             }
 
             if (!response.ok) {
-                throw new Error(payload.message || payload.Message || 'Unable to verify user');
+                throw new Error(payload.message || payload.Message || t('error.unableToVerifyUser'));
             }
 
             refresh();
         } catch (err) {
-            setSaveError(err.message || 'Unable to verify user');
+            setSaveError(err.message || t('error.unableToVerifyUser'));
         } finally {
             setVerifying(false);
         }
@@ -223,18 +223,34 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
         manager: '#FF9800',
         superuser: '#9C27B0'
     };
+    
+    // Translate role
+    const getRoleLabel = (role) => {
+        switch (role) {
+            case 'regular':
+                return t('users.roleRegular');
+            case 'cashier':
+                return t('users.roleCashier');
+            case 'manager':
+                return t('users.roleManager');
+            case 'superuser':
+                return t('users.roleSuperuser');
+            default:
+                return role;
+        }
+    };
 
     return (
         <div className="modal-overlay" onClick={handleClose}>
             <div className="user-detail-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>User Details</h2>
+                    <h2>{t('userDetail.title')}</h2>
                     <button className="modal-close" onClick={handleClose}>×</button>
                 </div>
 
                 <div className="modal-body">
                     {loading ? (
-                        <Loading message="Loading user..." />
+                        <Loading message={t('userDetail.loading')} />
                     ) : error ? (
                         <Error error={error} />
                     ) : user ? (
@@ -253,59 +269,59 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                                                 className="role-badge-large"
                                                 style={{ backgroundColor: roleColors[user.role] || '#666' }}
                                             >
-                                                {user.role}
+                                                {getRoleLabel(user.role)}
                                             </span>
                                             {user.verified ? (
-                                                <span className="status-badge status-badge--verified">Verified</span>
+                                                <span className="status-badge status-badge--verified">{t('users.verified')}</span>
                                             ) : (
-                                                <span className="status-badge status-badge--unverified">Unverified</span>
+                                                <span className="status-badge status-badge--unverified">{t('users.notVerified')}</span>
                                             )}
                                             {user.suspicious && (
-                                                <span className="status-badge status-badge--suspicious">Suspicious</span>
+                                                <span className="status-badge status-badge--suspicious">{t('transactionCard.suspicious')}</span>
                                             )}
                                             {!user.activated && (
-                                                <span className="status-badge status-badge--inactive">Inactive</span>
+                                                <span className="status-badge status-badge--inactive">{t('userDetail.inactive')}</span>
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="user-detail-section">
-                                        <h4>Account Information</h4>
+                                        <h4>{t('userDetail.accountInformation')}</h4>
                                         <div className="user-detail-grid">
                                             <div className="detail-item">
-                                                <span className="detail-label">Points:</span>
+                                                <span className="detail-label">{t('userDetail.points')}</span>
                                                 <span className="detail-value">{user.points?.toLocaleString() || 0}</span>
                                             </div>
                                             {user.birthday && (
                                                 <div className="detail-item">
-                                                    <span className="detail-label">Birthday:</span>
+                                                    <span className="detail-label">{t('userDetail.birthday')}</span>
                                                     <span className="detail-value">{user.birthday}</span>
                                                 </div>
                                             )}
                                             {user.createdAt && (
                                                 <div className="detail-item">
-                                                    <span className="detail-label">Joined:</span>
+                                                    <span className="detail-label">{t('userDetail.joined')}</span>
                                                     <span className="detail-value">{formatDate(user.createdAt)}</span>
                                                 </div>
                                             )}
                                             {user.lastLogin && (
                                                 <div className="detail-item">
-                                                    <span className="detail-label">Last Login:</span>
+                                                    <span className="detail-label">{t('userDetail.lastLogin')}</span>
                                                     <span className="detail-value">{formatDate(user.lastLogin)}</span>
                                                 </div>
                                             )}
                                             <div className="detail-item">
-                                                <span className="detail-label">Verified:</span>
-                                                <span className="detail-value">{user.verified ? 'Yes' : 'No'}</span>
+                                                <span className="detail-label">{t('userDetail.verified')}</span>
+                                                <span className="detail-value">{user.verified ? t('userDetail.yes') : t('userDetail.no')}</span>
                                             </div>
                                             <div className="detail-item">
-                                                <span className="detail-label">Suspicious:</span>
-                                                <span className="detail-value">{user.suspicious ? 'Yes' : 'No'}</span>
+                                                <span className="detail-label">{t('userDetail.suspicious')}</span>
+                                                <span className="detail-value">{user.suspicious ? t('userDetail.yes') : t('userDetail.no')}</span>
                                             </div>
                                             {user.activated !== undefined && (
                                                 <div className="detail-item">
-                                                    <span className="detail-label">Activated:</span>
-                                                    <span className="detail-value">{user.activated ? 'Yes' : 'No'}</span>
+                                                    <span className="detail-label">{t('userDetail.activated')}</span>
+                                                    <span className="detail-value">{user.activated ? t('userDetail.yes') : t('userDetail.no')}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -313,7 +329,7 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
 
                                     {user.promotions && user.promotions.length > 0 && (
                                         <div className="user-detail-section">
-                                            <h4>Promotions ({user.promotions.length})</h4>
+                                            <h4>{t('userDetail.promotions')} ({user.promotions.length})</h4>
                                             <div className="promotions-list">
                                                 {user.promotions.slice(0, 5).map((promo) => (
                                                     <span key={promo.id} className="promo-tag">
@@ -321,7 +337,7 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                                                     </span>
                                                 ))}
                                                 {user.promotions.length > 5 && (
-                                                    <span className="promo-tag">+{user.promotions.length - 5} more</span>
+                                                    <span className="promo-tag">+{user.promotions.length - 5} {t('userDetail.more')}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -329,7 +345,7 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
 
                                     <div className="modal-actions">
                                         <button className="secondary-btn" onClick={handleClose}>
-                                            Close
+                                            {t('userDetail.close')}
                                         </button>
                                         {isManager && !user.verified && (
                                             <button 
@@ -337,12 +353,12 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                                                 onClick={() => setVerifyModalOpen(true)}
                                                 disabled={verifying}
                                             >
-                                                {verifying ? 'Verifying...' : 'Verify User'}
+                                                {verifying ? t('userDetail.verifying') : t('userDetail.verifyUser')}
                                             </button>
                                         )}
                                         {isManager && (
                                             <button className="primary-btn" onClick={() => setIsEditing(true)}>
-                                                Edit User
+                                                {t('userDetail.editUser')}
                                             </button>
                                         )}
                                     </div>
@@ -361,7 +377,7 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
 
                                     <div className="edit-form-fields">
                                         <label className="checkbox-label">
-                                            Mark as Suspicious
+                                            {t('userDetail.markAsSuspicious')}
                                             <input
                                                 type="checkbox"
                                                 checked={editForm.suspicious || false}
@@ -375,7 +391,7 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                                         </label>
                                         <div className="role-field">
                                             <label className="role-label">
-                                                Role
+                                                {t('userDetail.role')}
                                             </label>
                                             <select
                                                 value={editForm.role}
@@ -386,16 +402,16 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                                                     }))
                                                 }
                                             >
-                                                <option value="regular">Regular</option>
-                                                <option value="cashier">Cashier</option>
+                                                <option value="regular">{t('users.roleRegular')}</option>
+                                                <option value="cashier">{t('users.roleCashier')}</option>
                                                 {currentUser?.role === 'superuser' && (
                                                     <>
-                                                        <option value="manager">Manager</option>
-                                                        <option value="superuser">Superuser</option>
+                                                        <option value="manager">{t('users.roleManager')}</option>
+                                                        <option value="superuser">{t('users.roleSuperuser')}</option>
                                                     </>
                                                 )}
                                                 {currentUser?.role === 'manager' && (
-                                                    <option value="manager">Manager</option>
+                                                    <option value="manager">{t('users.roleManager')}</option>
                                                 )}
                                             </select>
                                         </div>
@@ -411,10 +427,10 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                                             }}
                                             disabled={saving}
                                         >
-                                            Cancel
+                                            {t('userDetail.cancel')}
                                         </button>
                                         <button type="submit" className="primary-btn" disabled={saving}>
-                                            {saving ? 'Saving...' : 'Save Changes'}
+                                            {saving ? t('userDetail.saving') : t('userDetail.saveChanges')}
                                         </button>
                                     </div>
                                 </form>
@@ -427,10 +443,10 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
             {/* Verification Confirmation Modal */}
             <ConfirmModal
                 isOpen={verifyModalOpen}
-                title="Verify User?"
-                message={`Are you sure you want to verify ${user?.name || user?.utorid}? This action cannot be undone.`}
-                confirmText="Verify User"
-                cancelText="Cancel"
+                title={t('userDetail.verifyUserTitle')}
+                message={t('userDetail.verifyUserMessage').replace('{name}', user?.name || user?.utorid)}
+                confirmText={t('userDetail.verifyUser')}
+                cancelText={t('userDetail.cancel')}
                 onConfirm={handleVerifyUser}
                 onCancel={() => setVerifyModalOpen(false)}
             />

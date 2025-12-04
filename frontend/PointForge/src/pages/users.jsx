@@ -206,7 +206,7 @@ function Users() {
                 throw new Error(data.Message || data.message || 'Failed to create account');
             }
 
-            setToast('Account created successfully!');
+            setToast(t('users.accountCreated'));
             setCreateAccountModalOpen(false);
             setCreateAccountForm({
                 utorid: '',
@@ -236,6 +236,22 @@ function Users() {
             manager: '#FF9800',
             superuser: '#9C27B0'
         };
+        
+        // Translate role
+        const getRoleLabel = (role) => {
+            switch (role) {
+                case 'regular':
+                    return t('users.roleRegular');
+                case 'cashier':
+                    return t('users.roleCashier');
+                case 'manager':
+                    return t('users.roleManager');
+                case 'superuser':
+                    return t('users.roleSuperuser');
+                default:
+                    return role;
+            }
+        };
 
         return (
             <article key={userItem.id} className="user-card">
@@ -245,15 +261,15 @@ function Users() {
                         className="user-badge role-badge"
                         style={{ backgroundColor: roleColors[userItem.role] || '#666' }}
                     >
-                        {userItem.role}
+                        {getRoleLabel(userItem.role)}
                     </span>
                     {userItem.verified ? (
-                        <span className="user-badge status-badge--verified">Verified</span>
+                        <span className="user-badge status-badge--verified">{t('users.verified')}</span>
                     ) : (
-                        <span className="user-badge status-badge--unverified">Unverified</span>
+                        <span className="user-badge status-badge--unverified">{t('users.notVerified')}</span>
                     )}
                     {userItem.suspicious && (
-                        <span className="user-badge status-badge--suspicious">Suspicious</span>
+                        <span className="user-badge status-badge--suspicious">{t('transactionCard.suspicious')}</span>
                     )}
                 </div>
 
@@ -263,7 +279,7 @@ function Users() {
 
                 {/* User metadata: points */}
                 <div className="user-card-meta">
-                    <span>Points: {userItem.points?.toLocaleString() || 0}</span>
+                    <span>{t('users.points')} {userItem.points?.toLocaleString() || 0}</span>
                 </div>
 
                 {/* Action buttons */}
@@ -275,7 +291,7 @@ function Users() {
                             setDetailModalOpen(true);
                         }}
                     >
-                        View Details
+                        {t('users.viewDetails')}
                     </button>
                 </div>
             </article>
@@ -286,7 +302,7 @@ function Users() {
     if (!canCreateAccounts) {
         return (
             <div className="users-page container">
-                <Error error="Access denied. Only cashiers and above can access this page." />
+                <Error error={t('users.accessDenied')} />
             </div>
         );
     }
@@ -296,14 +312,14 @@ function Users() {
             {/* Page header */}
             <div className="page-header">
                 <div className="users-section">
-                    <h1>User Management</h1>
-                    <p>View and manage all users in the system</p>
+                    <h1>{t('users.title')}</h1>
+                    <p>{t('users.subtitle')}</p>
                 </div>
                 <div className="page-actions">
                     {toast && <span className="toast">{toast}</span>}
                     {canCreateAccounts && (
                         <button className="primary-btn" onClick={() => setCreateAccountModalOpen(true)}>
-                            Create Account
+                            {t('users.createAccount')}
                         </button>
                     )}
                 </div>
@@ -314,7 +330,7 @@ function Users() {
                 <div className="filters-row">
                     <input
                         type="search"
-                        placeholder="Search by name"
+                        placeholder={t('users.searchPlaceholder')}
                         value={filters.name}
                         onChange={(e) => handleFilterChange('name', e.target.value)}
                     />
@@ -322,30 +338,30 @@ function Users() {
                         value={filters.role}
                         onChange={(e) => handleFilterChange('role', e.target.value)}
                     >
-                        <option value="">All Roles</option>
-                        <option value="regular">Regular</option>
-                        <option value="cashier">Cashier</option>
-                        <option value="manager">Manager</option>
-                        <option value="superuser">Superuser</option>
+                        <option value="">{t('users.allRoles')}</option>
+                        <option value="regular">{t('users.roleRegular')}</option>
+                        <option value="cashier">{t('users.roleCashier')}</option>
+                        <option value="manager">{t('users.roleManager')}</option>
+                        <option value="superuser">{t('users.roleSuperuser')}</option>
                     </select>
                     <select
                         value={filters.verified}
                         onChange={(e) => handleFilterChange('verified', e.target.value)}
                     >
-                        <option value="">All Verification Status</option>
-                        <option value="true">Verified</option>
-                        <option value="false">Not Verified</option>
+                        <option value="">{t('users.allVerificationStatus')}</option>
+                        <option value="true">{t('users.verified')}</option>
+                        <option value="false">{t('users.notVerified')}</option>
                     </select>
                     <select
                         value={filters.activated}
                         onChange={(e) => handleFilterChange('activated', e.target.value)}
                     >
-                        <option value="">All Activation Status</option>
-                        <option value="true">Activated</option>
-                        <option value="false">Not Activated</option>
+                        <option value="">{t('users.allActivationStatus')}</option>
+                        <option value="true">{t('users.activated')}</option>
+                        <option value="false">{t('users.notActivated')}</option>
                     </select>
                     <button type="button" className="filters-toggle" onClick={clearFilters}>
-                        Clear Filters
+                        {t('users.clearFilters')}
                     </button>
                 </div>
             </section>
@@ -356,8 +372,8 @@ function Users() {
             {/* Show message for cashiers who can't view all users */}
             {isCashier && !isManager && (
                 <div className="users-info-message">
-                    <p>As a cashier, you can create accounts for users. Use the "Create Account" button above.</p>
-                    <p>Only managers and superusers can view the full user list.</p>
+                    <p>{t('users.cashierInfo')}</p>
+                    <p>{t('users.cashierInfo2')}</p>
                 </div>
             )}
 
@@ -365,10 +381,10 @@ function Users() {
             {isManager && (
                 <>
                     {loading ? (
-                        <Loading message="Loading users..." />
+                        <Loading message={t('users.loading')} />
                     ) : data.results.length === 0 ? (
                         <div className="users-empty">
-                            <EmptyState message="No users found matching your filters" />
+                            <EmptyState message={t('users.noMatches')} />
                         </div>
                     ) : (
                         <section className="users-grid">
@@ -386,17 +402,17 @@ function Users() {
                         disabled={page === 1}
                         onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                     >
-                        Previous
+                        {t('pagination.previous')}
                     </button>
                     <span className="results-meta">
-                        Page {page} of {totalPages} ({data.count} total users)
+                        {t('pagination.page')} {page} {t('pagination.of')} {totalPages} ({data.count} {t('pagination.totalUsers')})
                     </span>
                     <button
                         type="button"
                         disabled={page === totalPages}
                         onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                     >
-                        Next
+                        {t('pagination.next')}
                     </button>
                 </div>
             )}
@@ -417,14 +433,14 @@ function Users() {
                 <div className="modal-overlay" onClick={() => setCreateAccountModalOpen(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Create New Account</h2>
+                            <h2>{t('users.createNewAccount')}</h2>
                             <button className="modal-close" onClick={() => setCreateAccountModalOpen(false)}>×</button>
                         </div>
                         {createAccountError && <Error error={createAccountError} />}
                         <form onSubmit={handleCreateAccount} className="account-form">
                             <div className="account-form-group">
                                 <label htmlFor="create-utorid">
-                                    UTORid <span className="required">*</span>
+                                    {t('users.utorid')} <span className="required">{t('users.required')}</span>
                                 </label>
                                 <input
                                     type="text"
@@ -437,11 +453,11 @@ function Users() {
                                     pattern="[a-zA-Z0-9]+"
                                     disabled={createAccountLoading}
                                 />
-                                <small>7-8 alphanumeric characters</small>
+                                <small>{t('users.alphanumeric')}</small>
                             </div>
                             <div className="account-form-group">
                                 <label htmlFor="create-name">
-                                    Name <span className="required">*</span>
+                                    {t('users.name')} <span className="required">{t('users.required')}</span>
                                 </label>
                                 <input
                                     type="text"
@@ -455,7 +471,7 @@ function Users() {
                             </div>
                             <div className="account-form-group">
                                 <label htmlFor="create-email">
-                                    Email <span className="required">*</span>
+                                    {t('users.email')} <span className="required">{t('users.required')}</span>
                                 </label>
                                 <input
                                     type="email"
@@ -466,11 +482,11 @@ function Users() {
                                     pattern=".+@mail\.utoronto\.ca"
                                     disabled={createAccountLoading}
                                 />
-                                <small>Must be @mail.utoronto.ca</small>
+                                <small>{t('users.emailHint')}</small>
                             </div>
                             <div className="account-form-group">
                                 <label htmlFor="create-password">
-                                    Password <span className="required">*</span>
+                                    {t('users.password')} <span className="required">{t('users.required')}</span>
                                 </label>
                                 <input
                                     type="password"
@@ -481,12 +497,12 @@ function Users() {
                                     minLength={8}
                                     disabled={createAccountLoading}
                                 />
-                                <small>At least 8 characters with uppercase, lowercase, number, and special character</small>
+                                <small>{t('users.passwordHint')}</small>
                             </div>
                             {isManager && (
                                 <div className="account-form-group">
                                     <label htmlFor="create-role">
-                                        Role
+                                        {t('users.role')}
                                     </label>
                                     <select
                                         id="create-role"
@@ -494,14 +510,14 @@ function Users() {
                                         onChange={(e) => setCreateAccountForm({ ...createAccountForm, role: e.target.value })}
                                         disabled={createAccountLoading}
                                     >
-                                        <option value="regular">Regular</option>
+                                        <option value="regular">{t('users.roleRegular')}</option>
                                         {isManager && (
                                             <>
-                                                <option value="cashier">Cashier</option>
+                                                <option value="cashier">{t('users.roleCashier')}</option>
                                                 {user?.role === 'superuser' && (
                                                     <>
-                                                        <option value="manager">Manager</option>
-                                                        <option value="superuser">Superuser</option>
+                                                        <option value="manager">{t('users.roleManager')}</option>
+                                                        <option value="superuser">{t('users.roleSuperuser')}</option>
                                                     </>
                                                 )}
                                             </>
@@ -516,14 +532,14 @@ function Users() {
                                     onClick={() => setCreateAccountModalOpen(false)}
                                     disabled={createAccountLoading}
                                 >
-                                    Cancel
+                                    {t('users.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     className="primary-btn"
                                     disabled={createAccountLoading}
                                 >
-                                    {createAccountLoading ? 'Creating...' : 'Create Account'}
+                                    {createAccountLoading ? t('users.creating') : t('users.createAccount')}
                                 </button>
                             </div>
                         </form>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage, translatePromotionDescription } from '../contexts/LanguageContext.jsx';
 import { authenticatedFetch } from '../utils/api.js';
 import { Error, Loading, PromotionDetailModal } from '../components';
 import './cashierCreatePurchase.css';
@@ -34,6 +35,7 @@ const getActiveAutomaticPromotionIds = (automaticPromotionsList) => {
 
 function CashierCreatePurchase() {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     
     const [utorid, setUtorid] = useState('');
     const [spent, setSpent] = useState('');
@@ -134,7 +136,7 @@ function CashierCreatePurchase() {
             const activeAutomaticPromotionIds = getActiveAutomaticPromotionIds(automaticPromotionsList);
             setSelectedPromotions(activeAutomaticPromotionIds);
         } catch (err) {
-            setUserError(err.message || 'Failed to find user');
+            setUserError(err.message || t('error.failedToFindUser'));
             setUser(null);
             setSelectedPromotions([]);
         } finally {
@@ -261,20 +263,20 @@ function CashierCreatePurchase() {
                 try {
                     data = await response.json();
                 } catch (e) {
-                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                    throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
                 }
             } else {
-                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
             }
 
             if (!response.ok) {
-                let errorMsg = data?.Message || data?.message || data?.error || `Failed to create transaction (${response.status})`;
+                let errorMsg = data?.Message || data?.message || data?.error || `${t('error.failedToCreateTransaction')} (${response.status})`;
                 
                 if (response.status === 400) {
                     if (requestBody.promotionIds && requestBody.promotionIds.length > 0) {
-                        errorMsg += '. Possible issues: Promotion expired, minimum spending requirement not met, or promotion already used.';
+                        errorMsg += '. ' + t('error.promotionExpiredOrNotMet');
                     } else {
-                        errorMsg += '. Please check that all required fields are filled correctly.';
+                        errorMsg += '. ' + t('error.checkRequiredFields');
                     }
                 }
                 
@@ -310,7 +312,7 @@ function CashierCreatePurchase() {
                 setCreatedTransaction(null);
             }, 2000);
         } catch (err) {
-            setError(err.message || 'Failed to create transaction');
+            setError(err.message || t('error.failedToCreateTransaction'));
         } finally {
             setLoading(false);
         }
@@ -321,26 +323,26 @@ function CashierCreatePurchase() {
     return (
         <div className="cashier-create-purchase container">
             <div className="page-header">
-                <h1>Create Purchase Transaction</h1>
-                <p>Record a purchase and apply promotions for a member</p>
+                <h1>{t('cashierPurchase.title')}</h1>
+                <p>{t('cashierPurchase.subtitle')}</p>
             </div>
 
             {error && <Error error={error} />}
             
             {success && createdTransaction && (
                 <div className="success-message">
-                    <p>✓ Transaction created successfully!</p>
-                    <p>Member earned {createdTransaction.amount} points</p>
+                    <p>✓ {t('cashierPurchase.transactionCreated')}</p>
+                    <p>{t('cashierPurchase.memberEarned')} {createdTransaction.amount} {t('transactionCard.points')}</p>
                 </div>
             )}
 
             <form className="cashier-form" onSubmit={handleSubmit}>
                 {/* User Search Section */}
                 <section className="form-section">
-                    <h2>1. Find Member</h2>
+                    <h2>{t('cashierPurchase.memberInfo')}</h2>
                     <div className="form-group">
                         <label htmlFor="utorid">
-                            UTORid
+                            {t('cashierPurchase.memberUtorid')}
                             <span className="required">*</span>
                         </label>
                         <div className="search-group">
@@ -349,19 +351,19 @@ function CashierCreatePurchase() {
                                 id="utorid"
                                 value={utorid}
                                 onChange={(e) => setUtorid(e.target.value)}
-                                placeholder="Enter UTORid"
+                                placeholder={t('cashierPurchase.memberUtoridPlaceholder')}
                                 disabled={loading}
                                 className={userError ? 'input-error' : user ? 'input-success' : ''}
                             />
                             {searching && (
-                                <span className="searching-indicator">Searching...</span>
+                                <span className="searching-indicator">{t('cashierPurchase.searching')}</span>
                             )}
                         </div>
                         {userError && (
                             <small className="form-error">{userError}</small>
                         )}
                         {user && !userError && (
-                            <small className="form-success">✓ Member found</small>
+                            <small className="form-success">✓ {t('cashierPurchase.memberFound')}</small>
                         )}
                     </div>
                 </section>
@@ -370,10 +372,10 @@ function CashierCreatePurchase() {
                 {user && (
                     <>
                         <section className="form-section">
-                            <h2>2. Purchase Details</h2>
+                            <h2>{t('cashierPurchase.transactionDetails')}</h2>
                             <div className="form-group">
                                 <label htmlFor="spent">
-                                    Amount Spent ($)
+                                    {t('cashierPurchase.amountSpent')}
                                     <span className="required">*</span>
                                 </label>
                                 <input
@@ -404,7 +406,7 @@ function CashierCreatePurchase() {
                                             onChange={(e) => setShowRemarks(e.target.checked)}
                                             disabled={loading}
                                         />
-                                        <span className="toggle-text">Add Remarks</span>
+                                        <span className="toggle-text">{t('cashierPurchase.addRemarks')}</span>
                                     </label>
                                 </div>
                                 {showRemarks && (
@@ -412,7 +414,7 @@ function CashierCreatePurchase() {
                                         id="remark"
                                         value={remark}
                                         onChange={(e) => setRemark(e.target.value)}
-                                        placeholder="Add any notes about this transaction..."
+                                        placeholder={t('cashierPurchase.remarksPlaceholder')}
                                         rows="3"
                                         disabled={loading}
                                         style={{ marginTop: '0.5rem' }}
@@ -423,18 +425,18 @@ function CashierCreatePurchase() {
 
                         {/* Promotions Section */}
                         <section className="form-section">
-                            <h2>3. Apply Promotions</h2>
+                            <h2>{t('cashierPurchase.promotions')}</h2>
                             
                             {allPromotions.length === 0 ? (
                                 <div className="no-promotions">
-                                    <p>No active promotions in member's wallet.</p>
+                                    <p>{t('cashierPurchase.noPromotionsAvailable')}</p>
                                 </div>
                             ) : (
                                 <div className="promotions-list">
                                     {/* Automatic Promotions */}
                                     {automaticPromotions.length > 0 && (
                                         <div className="promotion-type-section">
-                                            <h4 className="promotion-type-header">Automatic Promotions (Auto-Applied)</h4>
+                                            <h4 className="promotion-type-header">{t('cashierPurchase.automaticPromotions')}</h4>
                                             {automaticPromotions.map(promotion => {
                                                 const canApply = meetsMinSpending(promotion);
                                                 const isSelected = selectedPromotions.includes(promotion.id);
@@ -447,32 +449,32 @@ function CashierCreatePurchase() {
                                                         <div className="promotion-header">
                                                             <div>
                                                                 <h4>{promotion.name}</h4>
-                                                                <span className="promotion-badge automatic-badge">Automatic</span>
+                                                                <span className="promotion-badge automatic-badge">{t('cashierPurchase.automatic')}</span>
                                                             </div>
                                                             {canApply && isSelected && (
-                                                                <span className="auto-applied-badge">✓ Auto-Applied</span>
+                                                                <span className="auto-applied-badge">{t('cashierPurchase.autoApplied')}</span>
                                                             )}
                                                         </div>
-                                                        <p className="promotion-description">{promotion.description}</p>
+                                                        <p className="promotion-description">{translatePromotionDescription(promotion.description, t)}</p>
                                                         <div className="promotion-details">
-                                                            <span>+{promotion.points || 0} base points</span>
+                                                            <span>+{promotion.points || 0} {t('cashierPurchase.basePoints')}</span>
                                                             {promotion.rate > 0 && (
-                                                                <span>+{Math.round(promotion.rate * 100)}% bonus</span>
+                                                                <span>+{Math.round(promotion.rate * 100)}% {t('promotionCard.bonus')}</span>
                                                             )}
                                                             {promotion.minSpending && (
                                                                 <span className={`min-spending ${canApply ? '' : 'warning'}`}>
-                                                                    Min: ${promotion.minSpending}
+                                                                    {t('promotions.minimumSpend')} ${promotion.minSpending}
                                                                 </span>
                                                             )}
                                                         </div>
                                                         {!canApply && (
                                                             <p className="promotion-warning">
-                                                                Minimum spending of ${promotion.minSpending} required (current: ${spent || '0'})
+                                                                {t('cashierPurchase.minimumSpendingRequired')} ${promotion.minSpending} {t('cashierPurchase.required')} ({t('cashierPurchase.current')} ${spent || '0'})
                                                             </p>
                                                         )}
                                                         {canApply && (
                                                             <p className="promotion-info">
-                                                                This promotion will be automatically applied if spending requirement is met.
+                                                                {t('cashierPurchase.willBeAutoApplied')}
                                                             </p>
                                                         )}
                                                     </div>
@@ -484,7 +486,7 @@ function CashierCreatePurchase() {
                                     {/* One-Time Promotions */}
                                     {oneTimePromotions.length > 0 && (
                                         <div className="promotion-type-section">
-                                            <h4 className="promotion-type-header">One-Time Promotions (Select to Apply)</h4>
+                                            <h4 className="promotion-type-header">{t('cashierPurchase.oneTimePromotions')}</h4>
                                             {oneTimePromotions.map(promotion => {
                                                 const isSelected = selectedPromotions.includes(promotion.id);
                                                 const canApply = meetsMinSpending(promotion);
@@ -497,10 +499,10 @@ function CashierCreatePurchase() {
                                                     >
                                                         <div className="promotion-summary-line">
                                                             <span className="promotion-name">{promotion.name}</span>
-                                                            <span className="promotion-points">+{promotion.points || 0} points</span>
+                                                            <span className="promotion-points">+{promotion.points || 0} {t('cashierPurchase.points')}</span>
                                                             {promotion.minSpending && (
                                                                 <span className={`promotion-min-spending ${canApply ? '' : 'warning'}`}>
-                                                                    Min: ${promotion.minSpending}
+                                                                    {t('promotions.minimumSpend')} ${promotion.minSpending}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -512,11 +514,11 @@ function CashierCreatePurchase() {
                                                                 setSelectedPromotionDetail(promotion.id);
                                                             }}
                                                         >
-                                                            Click to see more details
+                                                            {t('cashierPurchase.clickToSeeDetails')}
                                                         </button>
                                                         {!canApply && (
                                                             <p className="promotion-warning">
-                                                                Minimum spending of ${promotion.minSpending} required (current: ${spent || '0'})
+                                                                {t('cashierPurchase.minimumSpendingRequired')} ${promotion.minSpending} {t('cashierPurchase.required')} ({t('cashierPurchase.current')} ${spent || '0'})
                                                             </p>
                                                         )}
                                                     </div>
@@ -532,11 +534,11 @@ function CashierCreatePurchase() {
                         {spent && !isNaN(parseFloat(spent)) && parseFloat(spent) > 0 && (
                             <section className="form-section">
                                 <div className="points-preview">
-                                    <h3>Estimated Points to Award</h3>
-                                    <p className="points-value">{calculateEstimatedPoints().toLocaleString()} points</p>
+                                    <h3>{t('cashierPurchase.estimatedPoints')}</h3>
+                                    <p className="points-value">{calculateEstimatedPoints().toLocaleString()} {t('transactionCard.points')}</p>
                                     <p className="points-breakdown">
-                                        Base: {Math.ceil(parseFloat(spent) * 4)} + 
-                                        Promotions: {calculateEstimatedPoints() - Math.ceil(parseFloat(spent) * 4)}
+                                        {t('cashierPurchase.base')} {Math.ceil(parseFloat(spent) * 4)} + 
+                                        {t('cashierPurchase.promotionsLabel')} {calculateEstimatedPoints() - Math.ceil(parseFloat(spent) * 4)}
                                     </p>
                                 </div>
                             </section>
@@ -549,7 +551,7 @@ function CashierCreatePurchase() {
                                 className="primary-btn"
                                 disabled={loading || !spent || isNaN(parseFloat(spent)) || parseFloat(spent) <= 0}
                             >
-                                {loading ? 'Creating Transaction...' : 'Create Transaction'}
+                                {loading ? t('cashierPurchase.creating') : t('cashierPurchase.createTransaction')}
                             </button>
                             <button
                                 type="button"
@@ -557,7 +559,7 @@ function CashierCreatePurchase() {
                                 onClick={() => navigate('/dashboard')}
                                 disabled={loading}
                             >
-                                Cancel
+                                {t('cashierPurchase.cancel')}
                             </button>
                         </div>
                     </>

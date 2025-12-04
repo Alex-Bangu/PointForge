@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
 import { authenticatedFetch } from '../utils/api.js';
 import { Error, Loading } from '../components';
 import './transferPoints.css';
@@ -11,6 +12,7 @@ import './transferPoints.css';
  */
 function TransferPoints() {
     const { user, refreshUserData } = useContext(UserContext);
+    const { t } = useLanguage();
     const navigate = useNavigate();
     
     const [receiverUtorid, setReceiverUtorid] = useState('');
@@ -40,7 +42,7 @@ function TransferPoints() {
         // Don't search if it's the same as current user
         if (receiverUtorid.trim().toLowerCase() === user?.utorid?.toLowerCase()) {
             setReceiver(null);
-            setReceiverError('Cannot transfer to yourself');
+            setReceiverError(t('transfer.cannotTransferToSelf'));
             return;
         }
 
@@ -65,18 +67,18 @@ function TransferPoints() {
                 setReceiver(userData);
             } else if (response.status === 404) {
                 setReceiver(null);
-                setReceiverError('User not found');
+                setReceiverError(t('transfer.userNotFound'));
             } else if (response.status === 400) {
                 const data = await response.json();
                 setReceiver(null);
-                setReceiverError(data.Message || 'Cannot transfer to yourself');
+                setReceiverError(data.Message || t('transfer.cannotTransferToSelf'));
             } else {
                 setReceiver(null);
-                setReceiverError('Failed to search user');
+                setReceiverError(t('transfer.failedToSearch'));
             }
         } catch (err) {
             setReceiver(null);
-            setReceiverError('Failed to search user');
+            setReceiverError(t('transfer.failedToSearch'));
         } finally {
             setSearching(false);
         }
@@ -89,27 +91,27 @@ function TransferPoints() {
         
         const amountNum = parseInt(amount);
         if (isNaN(amountNum) || amountNum <= 0) {
-            setError('Please enter a valid positive amount');
+            setError(t('transfer.pleaseEnterValidAmount'));
             return;
         }
         
         if (!user) {
-            setError('User not found. Please log in.');
+            setError(t('error.unableToLoad'));
             return;
         }
         
         if (amountNum > user.points) {
-            setError(`Insufficient points. You have ${user.points?.toLocaleString() || 0} points available.`);
+            setError(`${t('transfer.insufficientPoints')} ${user.points?.toLocaleString() || 0} ${t('transfer.pointsAvailable')}`);
             return;
         }
 
         if (!receiver) {
-            setError('Please enter a valid receiver UTORid');
+            setError(t('transfer.pleaseEnterValidReceiver'));
             return;
         }
 
         if (receiver.id === user.id) {
-            setError('Cannot transfer points to yourself');
+            setError(t('transfer.cannotTransferToYourself'));
             return;
         }
         
@@ -166,35 +168,35 @@ function TransferPoints() {
     };
 
     if (!user) {
-        return <Loading message="Loading..." />;
+        return <Loading message={t('common.loading')} />;
     }
 
     return (
         <div className="transfer-points container">
             <div className="page-header">
-                <h1>Transfer Points</h1>
-                <p>Send points to another user</p>
+                <h1>{t('transfer.title')}</h1>
+                <p>{t('transfer.subtitle')}</p>
             </div>
 
             {error && <Error error={error} />}
             
             {success && (
                 <div className="success-message">
-                    <p>✓ Points transferred successfully!</p>
-                    <p>Your new balance: {user.points?.toLocaleString() || 0} points</p>
+                    <p>{t('transfer.success')}</p>
+                    <p>{t('transfer.newBalance')} {user.points?.toLocaleString() || 0} {t('transfer.points')}</p>
                 </div>
             )}
 
             <div className="current-balance">
-                <p><strong>Your Current Balance:</strong> {user.points?.toLocaleString() || 0} points</p>
+                <p><strong>{t('transfer.currentBalance')}</strong> {user.points?.toLocaleString() || 0} {t('transfer.points')}</p>
             </div>
 
             <form className="transfer-form" onSubmit={handleSubmit}>
                 <section className="form-section">
-                    <h2>Receiver Information</h2>
+                    <h2>{t('transfer.receiverInfo')}</h2>
                     <div className="form-group">
                         <label htmlFor="receiverUtorid">
-                            Receiver UTORid
+                            {t('transfer.receiverUtorid')}
                             <span className="required">*</span>
                         </label>
                         <input
@@ -202,27 +204,27 @@ function TransferPoints() {
                             id="receiverUtorid"
                             value={receiverUtorid}
                             onChange={(e) => setReceiverUtorid(e.target.value)}
-                            placeholder="Enter receiver's UTORid"
+                            placeholder={t('transfer.receiverPlaceholder')}
                             disabled={loading}
                             required
                         />
-                        {searching && <div className="searching-indicator">Searching...</div>}
+                        {searching && <div className="searching-indicator">{t('transfer.searching')}</div>}
                         {receiverError && <div className="error-text">{receiverError}</div>}
                         {receiver && (
                             <div className="receiver-info">
-                                <p><strong>Name:</strong> {receiver.name}</p>
-                                <p><strong>Current Points:</strong> {receiver.points?.toLocaleString() || 0}</p>
-                                <p><strong>Email:</strong> {receiver.email}</p>
+                                <p><strong>{t('transfer.receiverName')}</strong> {receiver.name}</p>
+                                <p><strong>{t('transfer.receiverCurrentPoints')}</strong> {receiver.points?.toLocaleString() || 0}</p>
+                                <p><strong>{t('transfer.receiverEmail')}</strong> {receiver.email}</p>
                             </div>
                         )}
                     </div>
                 </section>
 
                 <section className="form-section">
-                    <h2>Transfer Details</h2>
+                    <h2>{t('transfer.transferDetails')}</h2>
                     <div className="form-group">
                         <label htmlFor="amount">
-                            Amount to Transfer
+                            {t('transfer.amountToTransfer')}
                             <span className="required">*</span>
                         </label>
                         <input
@@ -230,25 +232,25 @@ function TransferPoints() {
                             id="amount"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            placeholder="Enter amount"
+                            placeholder={t('transfer.amountPlaceholder')}
                             disabled={loading || !receiver}
                             required
                             min="1"
                         />
                         <small className="form-hint">
-                            Enter the number of points you want to transfer. You cannot transfer more than your current balance.
+                            {t('transfer.amountHint')}
                         </small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="remark">
-                            Message (Optional)
+                            {t('transfer.message')}
                         </label>
                         <textarea
                             id="remark"
                             value={remark}
                             onChange={(e) => setRemark(e.target.value)}
-                            placeholder="Add a message for the receiver"
+                            placeholder={t('transfer.messagePlaceholder')}
                             disabled={loading || !receiver}
                             rows={3}
                         />
@@ -261,7 +263,7 @@ function TransferPoints() {
                         className="submit-btn"
                         disabled={loading || !receiver || !amount}
                     >
-                        {loading ? 'Transferring...' : 'Transfer Points'}
+                        {loading ? t('transfer.transferring') : t('transfer.transferPoints')}
                     </button>
                     <button
                         type="button"
@@ -269,7 +271,7 @@ function TransferPoints() {
                         onClick={() => navigate('/dashboard')}
                         disabled={loading}
                     >
-                        Cancel
+                        {t('transfer.cancel')}
                     </button>
                 </div>
             </form>

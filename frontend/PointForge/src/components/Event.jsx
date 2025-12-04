@@ -1,7 +1,9 @@
 import './Event.css';
 import { formatDate } from '../utils/dateUtils.js';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
 
 function Event({event, onDetailClick}) {
+    const { t } = useLanguage();
     if (!event) {
         return null;
     }

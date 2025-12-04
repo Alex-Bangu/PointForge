@@ -2,6 +2,7 @@
 // Source: https://www.npmjs.com/package/qrcode.react
 // Used for generating QR codes for transaction redemption
 import { QRCodeSVG } from 'qrcode.react';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
 import './QRCodeDisplay.css';
 
 /**
@@ -12,8 +13,9 @@ import './QRCodeDisplay.css';
  * @param {number} size - Size of the QR code in pixels (default: 256)
  */
 function QRCodeDisplay({ value, label, size = 256 }) {
+    const { t } = useLanguage();
     if (!value) {
-        return <div className="qr-code-error">No QR code data</div>;
+        return <div className="qr-code-error">{t('error.noQRCodeData')}</div>;
     }
     
     return (

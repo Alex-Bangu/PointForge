@@ -130,7 +130,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                 payload = await response.json();
             } else {
                 const text = await response.text();
-                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
             }
 
             if(!response.ok) {
@@ -178,6 +178,15 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
             // authenticatedFetch handles 401 automatically
             if(response.status === 401) {
                 throw new Error(t('error.sessionExpired'));
+            }
+
+            const contentType = response.headers.get('content-type');
+            let payload;
+            if(contentType && contentType.includes('application/json')) {
+                payload = await response.json();
+            } else {
+                const text = await response.text();
+                throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
             }
 
             if(!response.ok) {
@@ -281,7 +290,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                     const payload = await response.json().catch(() => ({}));
                     if (!response.ok) {
                         setCarryModalError(payload.message);
-                        throw new Error(payload.message || payload.Message || 'Unable to delete event');
+                        throw new Error(payload.message || payload.Message || t('error.unableToDeleteEvent'));
                     }
                 }
             }
@@ -293,7 +302,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                     const payload = await response.json().catch(() => ({}));
                     if (!response.ok) {
                         setCarryModalError(payload.message);
-                        throw new Error(payload.message || payload.Message || 'Unable to delete event');
+                        throw new Error(payload.message || payload.Message || t('error.unableToDeleteEvent'));
                     }
                 }
             }

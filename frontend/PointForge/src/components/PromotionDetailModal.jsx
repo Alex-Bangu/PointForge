@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../contexts/UserContext.jsx';
-import { useLanguage } from '../contexts/LanguageContext.jsx';
+import { useLanguage, translatePromotionDescription } from '../contexts/LanguageContext.jsx';
 import Loading from './Loading.jsx';
 import Error from './Error.jsx';
 import PromotionEditorModal from './PromotionEditorModal.jsx';
@@ -320,11 +320,11 @@ function PromotionDetailModal({ promotionId, isOpen, onClose, onPromotionUpdated
     // Build reward display - only show what exists
     const rewardParts = [];
     if (promotion.rate) {
-        rewardParts.push(`${Math.round(promotion.rate * 100)}% bonus`);
+        rewardParts.push(`${Math.round(promotion.rate * 100)}% ${t('promotionCard.bonus')}`);
     }
 
     if (promotion.points) {
-        rewardParts.push(`${promotion.points} pts`);
+        rewardParts.push(`${promotion.points} ${t('promotionCard.points')}`);
     }
 
     const rewardDisplay = rewardParts.length > 0 ? rewardParts.join(' · ') : t('common.none');
@@ -356,7 +356,7 @@ function PromotionDetailModal({ promotionId, isOpen, onClose, onPromotionUpdated
                 </div>
                 
                 {/* Promotion description */}
-                <p>{promotion.description}</p>
+                <p>{translatePromotionDescription(promotion.description, t)}</p>
                 
                 {/* Reward and minimum spending information in a grid */}
                 <div className="promotion-meta-grid">
