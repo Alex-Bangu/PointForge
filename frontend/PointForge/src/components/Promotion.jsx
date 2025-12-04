@@ -1,4 +1,5 @@
 import './Promotion.css';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
 
 /**
  * Promotion Card Component. This is the Promotion Card that we see in the Promotion Wallet in the dashboard
@@ -6,6 +7,7 @@ import './Promotion.css';
  * @param {function} onDetailClick - Callback when card is clicked (opens popup modal)
  */
 function Promotion({promotion, onDetailClick}) {
+    const { t } = useLanguage();
 
     if (!promotion) {
         return null;
@@ -14,17 +16,17 @@ function Promotion({promotion, onDetailClick}) {
     const rewardParts = [];
 
     if (promotion.rate) {
-        rewardParts.push(`${Math.round(promotion.rate * 100)}% bonus`);
+        rewardParts.push(`${Math.round(promotion.rate * 100)}% ${t('promotionCard.bonus')}`);
     }
 
     if (promotion.points) {
-        rewardParts.push(`${promotion.points} pts`);
+        rewardParts.push(`${promotion.points} ${t('promotionCard.points')}`);
     }
 
-    const amount = rewardParts.length > 0 ? rewardParts.join(' · ') : 'None';
+    const amount = rewardParts.length > 0 ? rewardParts.join(' · ') : t('promotionCard.none');
     
     // Format the type display (convert database values to readable text)
-    const typeDisplay = promotion.type === 'automatic' ? 'Automatic' : promotion.type === 'onetime' ? 'One-Time' : promotion.type;
+    const typeDisplay = promotion.type === 'automatic' ? t('promotionCard.automatic') : promotion.type === 'onetime' ? t('promotionCard.oneTime') : promotion.type;
 
     // Handle click - opens popup modal via callback from parent
     const handleClick = (e) => {

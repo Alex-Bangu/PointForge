@@ -165,7 +165,7 @@ function Events() {
 
                 // Handle expired session (authenticatedFetch handles logout automatically)
                 if(response.status === 401) {
-                    throw new Error('Session expired. Please log in again.');
+                    throw new Error(t('error.sessionExpired'));
                 }
 
                 // Check content type before parsing - prevents errors if server returns HTML instead of JSON
@@ -284,15 +284,16 @@ function Events() {
                     missingFields.push('endTime');
                 }
                 if(missingFields.length > 0) {
-                    setModalError(`Missing required fields: ${missingFields.join(', ')}`);
+                    const errorMsg = t('error.missingFields') + ': ' + missingFields.join(', ');
+                    setModalError(errorMsg);
                     console.log("missingFields: ", missingFields);
-                    throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+                    throw new Error(errorMsg);
                 }
             }
 
             if(Object.keys(payload).length === 0) {
-                setModalError("Nothing to save");
-                throw new Error('Nothing to save');
+                setModalError(t('error.nothingToSave'));
+                throw new Error(t('error.nothingToSave'));
             }
 
             // Determine endpoint and method
@@ -318,7 +319,7 @@ function Events() {
                 body = await response.json();
             } else {
                 const text = await response.text();
-                body = { message: text || 'Unknown error' };
+                body = { message: text || t('error.unknownError') };
             }
 
             if(!response.ok) {
@@ -326,7 +327,7 @@ function Events() {
                 console.log('Failed to save event. Payload:', payload);
                 console.log('Response:', body);
                 setModalError(body.message);
-                throw new Error(body.message || body.Message || `Unable to save event (${response.status})`);
+                throw new Error(body.message || body.Message || `${t('error.unableToSaveEvent')} (${response.status})`);
             }
 
             // Success! Show toast and refresh the list
@@ -379,7 +380,7 @@ function Events() {
                     payload = text ? { message: text } : {};
                 }
                 // Extract error message from response
-                const errorMessage = payload.message || payload.Message || `Unable to delete event (${response.status})`;
+                const errorMessage = payload.message || payload.Message || `${t('error.unableToDeleteEvent')} (${response.status})`;
                 setError(errorMessage);
                 throw new Error(errorMessage);
             }
@@ -387,7 +388,7 @@ function Events() {
             setRefreshKey((key) => key + 1);  // Refresh the list
         } catch (err) {
             // Show error message to user
-            const errorMsg = err.message || 'Unable to delete event';
+            const errorMsg = err.message || t('error.unableToDeleteEvent');
             console.error('Delete event error:', errorMsg);
         }
     };
@@ -428,8 +429,8 @@ function Events() {
             }
 
             if(!response.ok) {
-                setError(payload.message || 'Unable to RSVP to event');
-                throw new Error(payload.message || 'Unable to RSVP to event');
+                setError(payload.message || t('error.unableToRSVP'));
+                throw new Error(payload.message || t('error.unableToRSVP'));
             }
             // Refresh to show updated status (no success popup)
             setRefreshKey((key) => key + 1);  // Trigger re-fetch
@@ -539,38 +540,38 @@ function Events() {
                 <div className="filters-row">
                     <input
                         type="search"
-                        placeholder="Search by name"
+                        placeholder={t('events.searchNamePlaceholder')}
                         value={filters.name}
                         onChange={(event) => handleFilterChange('name', event.target.value)}
-                    />\
+                    />
 
                     <input
                         type="search"
-                        placeholder="Search by location"
+                        placeholder={t('events.searchLocationPlaceholder')}
                         value={filters.location}
                         onChange={(event) => handleFilterChange('location', event.target.value)}
                     />
                     {/* Type filter: automatic, onetime, or all */}
                     <select value={filters.started} onChange={(event) => handleFilterChange('started', event.target.value)}>
-                        <option value="" disabled>Select started status</option>
-                        <option value="true">Started</option>
-                        <option value="false">Not Started</option>
+                        <option value="" disabled>{t('events.selectStartedStatus')}</option>
+                        <option value="true">{t('events.started')}</option>
+                        <option value="false">{t('events.notStarted')}</option>
                     </select>
                     <select value={filters.ended} onChange={(event) => handleFilterChange('ended', event.target.value)}>
-                        <option value="" disabled>Select ended status</option>
-                        <option value="true">Ended</option>
-                        <option value="false">Not Ended</option>
+                        <option value="" disabled>{t('events.selectEndedStatus')}</option>
+                        <option value="true">{t('events.ended')}</option>
+                        <option value="false">{t('events.notEnded')}</option>
                     </select>
                     <select value={filters.full} onChange={(event) => handleFilterChange('full', event.target.value)}>
-                        <option value="" disabled>Select capacity</option>
-                        <option value="true">Full</option>
-                        <option value="false">Not Full</option>
+                        <option value="" disabled>{t('events.selectCapacity')}</option>
+                        <option value="true">{t('events.full')}</option>
+                        <option value="false">{t('events.notFull')}</option>
                     </select>
                     {isManager && (
                         <select value={filters.published} onChange={(event) => handleFilterChange('published', event.target.value)}>
-                            <option value="" disabled>Published?</option>
-                            <option value="true">Published.</option>
-                            <option value="false">Not Published</option>
+                            <option value="" disabled>{t('events.published')}</option>
+                            <option value="true">{t('events.publishedTrue')}</option>
+                            <option value="false">{t('events.publishedFalse')}</option>
                         </select>
                     )}
                     <button type="button" className="filters-toggle" onClick={clearFilters}>
@@ -600,15 +601,15 @@ function Events() {
             {totalPages > 1 && (
                 <div className="pagination">
                     <button type="button" disabled={page === 1} onClick={() => setPage((prev) => Math.max(1, prev - 1))}>
-                        Previous
+                        {t('pagination.previous')}
                     </button>
-                    <span className="results-meta">Page {page} of {totalPages}</span>
+                    <span className="results-meta">{t('pagination.page')} {page} {t('pagination.of')} {totalPages}</span>
                     <button
                         type="button"
                         disabled={page === totalPages}
                         onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                     >
-                        Next
+                        {t('pagination.next')}
                     </button>
                 </div>
             )}
@@ -640,10 +641,10 @@ function Events() {
             {/* Confirmation modal - asks user to confirm before adding event to wallet */}
             <ConfirmModal
                 isOpen={confirmModalOpen}
-                title="RSVP?"
-                message="Are you sure you want to RSVP to this event?"
-                confirmText="RSVP"
-                cancelText="Cancel"
+                title={t('events.rsvpConfirmTitle')}
+                message={t('events.rsvpConfirmMessage')}
+                confirmText={t('events.rsvpConfirmButton')}
+                cancelText={t('common.cancel')}
                 onConfirm={handleApplyEvent}
                 onCancel={() => {
                     setConfirmModalOpen(false);

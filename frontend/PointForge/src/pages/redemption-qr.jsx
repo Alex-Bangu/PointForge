@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
 import { authenticatedFetch } from '../utils/api.js';
 import { QRCodeDisplay, Loading, Error } from '../components';
 import './redemption-qr.css';
@@ -13,6 +14,7 @@ function RedemptionQR() {
     const { transactionId } = useParams();
     const navigate = useNavigate();
     const { user } = useContext(UserContext);
+    const { t } = useLanguage();
     const [transaction, setTransaction] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -26,7 +28,7 @@ function RedemptionQR() {
                     
                     // authenticatedFetch handles 401 automatically
                     if (response.status === 401) {
-                        throw new Error('Session expired. Please log in again.');
+                        throw new Error(t('redemptionQR.sessionExpired'));
                     }
 
                     const contentType = response.headers.get('content-type');
@@ -49,10 +51,10 @@ function RedemptionQR() {
                     if (unprocessed) {
                         setTransaction(unprocessed);
                     } else {
-                        setError('No unprocessed redemption requests found');
+                        setError(t('redemptionQR.noUnprocessed'));
                     }
                 } catch (err) {
-                    setError(err.message || 'Failed to load redemption requests');
+                    setError(err.message || t('redemptionQR.failedToLoad'));
                 } finally {
                     setLoading(false);
                 }
@@ -63,7 +65,7 @@ function RedemptionQR() {
                     
                     // authenticatedFetch handles 401 automatically
                     if (response.status === 401) {
-                        throw new Error('Session expired. Please log in again.');
+                        throw new Error(t('redemptionQR.sessionExpired'));
                     }
 
                     const contentType = response.headers.get('content-type');
@@ -82,10 +84,10 @@ function RedemptionQR() {
                     if (found) {
                         setTransaction(found);
                     } else {
-                        setError('Redemption request not found');
+                        setError(t('redemptionQR.notFound'));
                     }
                 } catch (err) {
-                    setError(err.message || 'Failed to load redemption request');
+                    setError(err.message || t('redemptionQR.failedToLoadRequest'));
                 } finally {
                     setLoading(false);
                 }
@@ -122,7 +124,7 @@ function RedemptionQR() {
     if (loading) {
         return (
             <div className="redemption-qr-page container">
-                <Loading message="Loading redemption request..." />
+                <Loading message={t('redemptionQR.loading')} />
             </div>
         );
     }
@@ -133,10 +135,10 @@ function RedemptionQR() {
                 <Error error={error} />
                 <div className="redemption-qr-actions">
                     <button className="secondary-btn" onClick={() => navigate('/dashboard/redemption')}>
-                        Create New Request
+                        {t('redemptionQR.createNewRequest')}
                     </button>
                     <button className="secondary-btn" onClick={() => navigate('/dashboard')}>
-                        Back to Dashboard
+                        {t('redemptionQR.backToDashboard')}
                     </button>
                 </div>
             </div>
@@ -146,10 +148,10 @@ function RedemptionQR() {
     if (!transaction) {
         return (
             <div className="redemption-qr-page container">
-                <Error error="No redemption request found" />
+                <Error error={t('redemptionQR.noRequestFound')} />
                 <div className="redemption-qr-actions">
                     <button className="secondary-btn" onClick={() => navigate('/dashboard/redemption')}>
-                        Create New Request
+                        {t('redemptionQR.createNewRequest')}
                     </button>
                 </div>
             </div>
@@ -161,11 +163,11 @@ function RedemptionQR() {
     return (
         <div className="redemption-qr-page container">
             <div className="redemption-qr-header">
-                <h1>Redemption QR Code</h1>
+                <h1>{t('redemptionQR.title')}</h1>
                 <p>
                     {isProcessed 
-                        ? 'This redemption has been processed' 
-                        : 'Show this QR code to a cashier to process your redemption'}
+                        ? t('redemptionQR.processed')
+                        : t('redemptionQR.pending')}
                 </p>
             </div>
 
@@ -174,57 +176,57 @@ function RedemptionQR() {
                     <>
                         <QRCodeDisplay 
                             value={String(transaction.id)} 
-                            label="Transaction ID"
+                            label={t('redemptionQR.transactionId')}
                             size={280}
                         />
                         
                         <div className="redemption-qr-info">
                             <div className="status-badge status-badge--pending">
-                                Pending
+                                {t('redemptionQR.pendingStatus')}
                             </div>
                             
                             <div className="redemption-details">
                                 <div className="detail-item">
-                                    <span className="detail-label">Transaction ID:</span>
+                                    <span className="detail-label">{t('redemptionQR.transactionIdLabel')}</span>
                                     <span className="detail-value">#{transaction.id}</span>
                                 </div>
                                 <div className="detail-item">
-                                    <span className="detail-label">Points to Redeem:</span>
-                                    <span className="detail-value">{Math.abs(transaction.redeemed || transaction.amount || 0).toLocaleString()} pts</span>
+                                    <span className="detail-label">{t('redemptionQR.pointsToRedeem')}</span>
+                                    <span className="detail-value">{Math.abs(transaction.redeemed || transaction.amount || 0).toLocaleString()} {t('transactionCard.points')}</span>
                                 </div>
                                 {transaction.remark && (
                                     <div className="detail-item">
-                                        <span className="detail-label">Remarks:</span>
+                                        <span className="detail-label">{t('redemptionQR.remarks')}</span>
                                         <span className="detail-value">{transaction.remark}</span>
                                     </div>
                                 )}
                             </div>
 
                             <p className="redemption-qr-instructions">
-                                A cashier can scan this QR code to quickly access and process your redemption request.
+                                {t('redemptionQR.instructions')}
                             </p>
                         </div>
                     </>
                 ) : (
                     <div className="redemption-qr-processed">
                         <div className="status-badge status-badge--processed">
-                            Processed
+                            {t('redemptionQR.processedStatus')}
                         </div>
                         <p className="processed-message">
-                            This redemption request has been successfully processed.
+                            {t('redemptionQR.processedMessage')}
                         </p>
                         <div className="redemption-details">
                             <div className="detail-item">
-                                <span className="detail-label">Transaction ID:</span>
+                                <span className="detail-label">{t('redemptionQR.transactionIdLabel')}</span>
                                 <span className="detail-value">#{transaction.id}</span>
                             </div>
                             <div className="detail-item">
-                                <span className="detail-label">Points Redeemed:</span>
-                                <span className="detail-value">{Math.abs(transaction.redeemed || transaction.amount || 0).toLocaleString()} pts</span>
+                                <span className="detail-label">{t('redemptionQR.pointsRedeemed')}</span>
+                                <span className="detail-value">{Math.abs(transaction.redeemed || transaction.amount || 0).toLocaleString()} {t('transactionCard.points')}</span>
                             </div>
                             {transaction.processedBy && (
                                 <div className="detail-item">
-                                    <span className="detail-label">Processed By:</span>
+                                    <span className="detail-label">{t('redemptionQR.processedBy')}</span>
                                     <span className="detail-value">{transaction.processedBy}</span>
                                 </div>
                             )}
@@ -234,10 +236,10 @@ function RedemptionQR() {
 
                 <div className="redemption-qr-actions">
                     <button className="secondary-btn" onClick={() => navigate('/dashboard/redemption')}>
-                        {isProcessed ? 'Create New Request' : 'Request Another Redemption'}
+                        {isProcessed ? t('redemptionQR.createNewRequest') : t('redemptionQR.requestAnother')}
                     </button>
                     <button className="secondary-btn" onClick={() => navigate('/dashboard')}>
-                        Back to Dashboard
+                        {t('redemptionQR.backToDashboard')}
                     </button>
                 </div>
             </div>

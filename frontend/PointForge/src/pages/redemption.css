@@ -7,23 +7,6 @@
     margin: 0 auto;
 }
 
-.redemption-header {
-    text-align: center;
-}
-
-.redemption-header h1 {
-    color: #B8860B;
-    margin: 0 0 0.5rem 0;
-    font-size: 2rem;
-    font-weight: 700;
-}
-
-.redemption-header p {
-    color: #b0b0b0;
-    margin: 0;
-    font-size: 1rem;
-}
-
 .redemption-content {
     background: #014530;
     border-radius: 16px;
@@ -32,6 +15,29 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+.redemption-header {
+    text-align: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.redemption-header h1 {
+    color: #B8860B;
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    font-weight: 700;
+    white-space: nowrap;
+    display: block;
+}
+
+.redemption-header p {
+    color: #b0b0b0;
+    margin: 0;
+    font-size: 1rem;
+    display: block;
+    line-height: 1.5;
 }
 
 .redemption-info {

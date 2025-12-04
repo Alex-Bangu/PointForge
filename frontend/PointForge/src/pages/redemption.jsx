@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
 import { authenticatedFetch } from '../utils/api.js';
 import { Error, Loading } from '../components';
 import './redemption.css';
@@ -11,6 +12,7 @@ import './redemption.css';
  */
 function Redemption() {
     const { user, loading: userLoading, error: userError, refreshUserData } = useContext(UserContext);
+    const { t } = useLanguage();
     const navigate = useNavigate();
     
     const [amount, setAmount] = useState('');
@@ -19,7 +21,7 @@ function Redemption() {
     const [loading, setLoading] = useState(false);
 
     if (userLoading) {
-        return <Loading message="Loading..." />;
+        return <Loading message={t('common.loading')} />;
     }
 
     if (userError) {
@@ -27,7 +29,7 @@ function Redemption() {
     }
 
     if (!user) {
-        return <Error error="User not found. Please log in." />;
+        return <Error error={t('error.unableToLoad')} />;
     }
 
     const handleSubmit = async (e) => {
@@ -36,12 +38,12 @@ function Redemption() {
         
         const amountNum = parseInt(amount);
         if (isNaN(amountNum) || amountNum <= 0) {
-            setError('Please enter a valid positive amount');
+            setError(t('redemption.pleaseEnterValidAmount'));
             return;
         }
         
         if (amountNum > user.points) {
-            setError(`Insufficient points. You have ${user.points?.toLocaleString() || 0} points available.`);
+            setError(`${t('transfer.insufficientPoints')} ${user.points?.toLocaleString() || 0} ${t('transfer.pointsAvailable')}`);
             return;
         }
         
@@ -58,7 +60,7 @@ function Redemption() {
 
             // authenticatedFetch handles 401 automatically
             if (response.status === 401) {
-                throw new Error('Session expired. Please log in again.');
+                throw new Error(t('redemption.sessionExpired'));
             }
 
             const contentType = response.headers.get('content-type');
@@ -67,11 +69,11 @@ function Redemption() {
                 data = await response.json();
             } else {
                 const text = await response.text();
-                throw new Error(text || 'Failed to create redemption request');
+                throw new Error(text || t('redemption.failedToCreate'));
             }
 
             if (!response.ok) {
-                throw new Error(data.Message || data.message || 'Failed to create redemption request');
+                throw new Error(data.Message || data.message || t('redemption.failedToCreate'));
             }
             
             // Refresh user data to update points
@@ -82,7 +84,7 @@ function Redemption() {
             // Redirect to QR code page
             navigate(`/dashboard/redemption-qr/${data.id}`);
         } catch (err) {
-            setError(err.message || 'Failed to create redemption request');
+            setError(err.message || t('redemption.failedToCreate'));
         } finally {
             setLoading(false);
         }
@@ -90,15 +92,14 @@ function Redemption() {
 
     return (
         <div className="redemption-page container">
-            <div className="redemption-header">
-                <h1>Request Redemption</h1>
-                <p>Convert your points into rewards</p>
-            </div>
-
             <div className="redemption-content">
+                <div className="redemption-header">
+                    <h1>{t('redemption.title')}</h1>
+                    <p>{t('redemption.subtitle')}</p>
+                </div>
                 <div className="redemption-info">
                     <div className="points-display">
-                        <span className="points-label">Available Points</span>
+                        <span className="points-label">{t('redemption.availablePoints')}</span>
                         <span className="points-value">{user.points?.toLocaleString() || 0}</span>
                     </div>
                 </div>
@@ -108,7 +109,7 @@ function Redemption() {
                 <form className="redemption-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="amount">
-                            Points to Redeem
+                            {t('redemption.pointsToRedeem')}
                             <span className="required">*</span>
                         </label>
                         <input
@@ -116,24 +117,24 @@ function Redemption() {
                             id="amount"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            placeholder="Enter amount"
+                            placeholder={t('redemption.pointsToRedeem')}
                             min="1"
                             max={user.points || 0}
                             required
                             disabled={loading}
                         />
                         <small className="form-hint">
-                            Maximum: {user.points?.toLocaleString() || 0} points
+                            {t('redemption.maximum')} {user.points?.toLocaleString() || 0} {t('redemption.points')}
                         </small>
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="remark">Remarks (Optional)</label>
+                        <label htmlFor="remark">{t('redemption.remarks')}</label>
                         <textarea
                             id="remark"
                             value={remark}
                             onChange={(e) => setRemark(e.target.value)}
-                            placeholder="Add any additional notes..."
+                            placeholder={t('redemption.remarksPlaceholder')}
                             rows="3"
                             disabled={loading}
                         />
@@ -145,7 +146,7 @@ function Redemption() {
                             className="primary-btn"
                             disabled={loading || !amount || parseInt(amount) <= 0}
                         >
-                            {loading ? 'Creating Request...' : 'Create Redemption Request'}
+                            {loading ? t('redemption.creatingRequest') : t('redemption.createRequest')}
                         </button>
                         <button
                             type="button"
@@ -153,7 +154,7 @@ function Redemption() {
                             onClick={() => navigate('/dashboard')}
                             disabled={loading}
                         >
-                            Cancel
+                            {t('redemption.cancel')}
                         </button>
                     </div>
                 </form>

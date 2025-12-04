@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
 import { authenticatedFetch } from '../utils/api.js';
 import { Error, Loading } from '../components';
 import './managerCreateAdjustment.css';
@@ -10,6 +11,7 @@ import './managerCreateAdjustment.css';
  */
 function ManagerCreateAdjustment() {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     
     const [utorid, setUtorid] = useState('');
     const [amount, setAmount] = useState('');
@@ -58,14 +60,14 @@ function ManagerCreateAdjustment() {
                 setUser(userData);
             } else if (response.status === 404) {
                 setUser(null);
-                setUserError('User not found');
+                setUserError(t('error.userNotFound'));
             } else {
                 setUser(null);
-                setUserError('Failed to search user');
+                setUserError(t('error.failedToSearchUser'));
             }
         } catch (err) {
             setUser(null);
-            setUserError('Failed to search user');
+            setUserError(t('error.failedToSearchUser'));
         } finally {
             setSearching(false);
         }
@@ -77,13 +79,13 @@ function ManagerCreateAdjustment() {
         setSuccess(false);
 
         if (!user) {
-            setError('Please enter a valid UTORid and wait for member verification');
+            setError(t('error.pleaseEnterValidUtorid'));
             return;
         }
 
         const amountNum = parseInt(amount);
         if (isNaN(amountNum) || amountNum === 0) {
-            setError('Please enter a valid non-zero amount');
+            setError(t('error.pleaseEnterValidNonZeroAmount'));
             return;
         }
 
@@ -92,7 +94,7 @@ function ManagerCreateAdjustment() {
         if (relatedId.trim()) {
             relatedIdNum = parseInt(relatedId.trim());
             if (isNaN(relatedIdNum) || relatedIdNum <= 0) {
-                setError('Related Transaction ID must be a valid positive integer');
+                setError(t('error.relatedTransactionIdInvalid'));
                 return;
             }
         }
@@ -123,11 +125,11 @@ function ManagerCreateAdjustment() {
                 data = await response.json();
             } else {
                 const text = await response.text();
-                throw new Error(text || 'Failed to create adjustment transaction');
+                throw new Error(text || t('error.failedToCreateAdjustment'));
             }
 
             if (!response.ok) {
-                throw new Error(data.Message || data.message || 'Failed to create adjustment transaction');
+                throw new Error(data.Message || data.message || t('error.failedToCreateAdjustment'));
             }
 
             setSuccess(true);
@@ -144,7 +146,7 @@ function ManagerCreateAdjustment() {
                 setCreatedTransaction(null);
             }, 3000);
         } catch (err) {
-            setError(err.message || 'Failed to create adjustment transaction');
+            setError(err.message || t('error.failedToCreateAdjustment'));
         } finally {
             setLoading(false);
         }
@@ -153,26 +155,26 @@ function ManagerCreateAdjustment() {
     return (
         <div className="manager-create-adjustment container">
             <div className="page-header">
-                <h1>Create Adjustment Transaction</h1>
-                <p>Add or subtract points from a user's account</p>
+                <h1>{t('managerAdjustment.title')}</h1>
+                <p>{t('managerAdjustment.subtitle')}</p>
             </div>
 
             {error && <Error error={error} />}
             
             {success && createdTransaction && (
                 <div className="success-message">
-                    <p>✓ Adjustment transaction created successfully!</p>
-                    <p>Points {createdTransaction.amount > 0 ? 'added' : 'subtracted'}: {Math.abs(createdTransaction.amount)}</p>
-                    <p>User's new balance: {user ? (user.points + createdTransaction.amount).toLocaleString() : 'N/A'} points</p>
+                    <p>✓ {t('managerAdjustment.success')}</p>
+                    <p>{createdTransaction.amount > 0 ? t('managerAdjustment.pointsAdded') : t('managerAdjustment.pointsSubtracted')} {Math.abs(createdTransaction.amount)}</p>
+                    <p>{t('managerAdjustment.newBalance')} {user ? (user.points + createdTransaction.amount).toLocaleString() : t('managerAdjustment.notAvailable')} {t('transactionCard.points')}</p>
                 </div>
             )}
 
             <form className="adjustment-form" onSubmit={handleSubmit}>
                 <section className="form-section">
-                    <h2>Member Information</h2>
+                    <h2>{t('managerAdjustment.memberInfo')}</h2>
                     <div className="form-group">
                         <label htmlFor="utorid">
-                            UTORid
+                            {t('managerAdjustment.utorid')}
                             <span className="required">*</span>
                         </label>
                         <input
@@ -180,27 +182,27 @@ function ManagerCreateAdjustment() {
                             id="utorid"
                             value={utorid}
                             onChange={(e) => setUtorid(e.target.value)}
-                            placeholder="Enter member UTORid"
+                            placeholder={t('managerAdjustment.utoridPlaceholder')}
                             disabled={loading}
                             required
                         />
-                        {searching && <div className="searching-indicator">Searching...</div>}
+                        {searching && <div className="searching-indicator">{t('managerAdjustment.searching')}</div>}
                         {userError && <div className="error-text">{userError}</div>}
                         {user && (
                             <div className="user-info">
-                                <p><strong>Name:</strong> {user.name}</p>
-                                <p><strong>Current Points:</strong> {user.points?.toLocaleString() || 0}</p>
-                                <p><strong>Email:</strong> {user.email}</p>
+                                <p><strong>{t('managerAdjustment.name')}</strong> {user.name}</p>
+                                <p><strong>{t('managerAdjustment.currentPoints')}</strong> {user.points?.toLocaleString() || 0}</p>
+                                <p><strong>{t('managerAdjustment.email')}</strong> {user.email}</p>
                             </div>
                         )}
                     </div>
                 </section>
 
                 <section className="form-section">
-                    <h2>Adjustment Details</h2>
+                    <h2>{t('managerAdjustment.adjustmentDetails')}</h2>
                     <div className="form-group">
                         <label htmlFor="amount">
-                            Points Adjustment
+                            {t('managerAdjustment.pointsAdjustment')}
                             <span className="required">*</span>
                         </label>
                         <input
@@ -208,42 +210,41 @@ function ManagerCreateAdjustment() {
                             id="amount"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            placeholder="Enter amount (positive to add, negative to subtract)"
+                            placeholder={t('managerAdjustment.amountPlaceholder')}
                             disabled={loading || !user}
                             required
                         />
                         <small className="form-hint">
-                            Enter a positive number to add points, or a negative number to subtract points.
-                            Example: 100 (adds 100 points), -50 (subtracts 50 points)
+                            {t('managerAdjustment.amountHint')}
                         </small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="relatedId">
-                            Related Transaction ID (Optional)
+                            {t('managerAdjustment.relatedId')}
                         </label>
                         <input
                             type="number"
                             id="relatedId"
                             value={relatedId}
                             onChange={(e) => setRelatedId(e.target.value)}
-                            placeholder="Transaction ID this adjustment relates to"
+                            placeholder={t('managerAdjustment.relatedIdPlaceholder')}
                             disabled={loading || !user}
                         />
                         <small className="form-hint">
-                            If this adjustment is correcting or related to a specific transaction, enter its ID here.
+                            {t('managerAdjustment.relatedIdHint')}
                         </small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="remark">
-                            Remark (Optional)
+                            {t('managerAdjustment.remark')}
                         </label>
                         <textarea
                             id="remark"
                             value={remark}
                             onChange={(e) => setRemark(e.target.value)}
-                            placeholder="Add a note about this adjustment"
+                            placeholder={t('managerAdjustment.remarkPlaceholder')}
                             disabled={loading || !user}
                             rows={3}
                         />
@@ -256,7 +257,7 @@ function ManagerCreateAdjustment() {
                         className="submit-btn"
                         disabled={loading || !user || !amount}
                     >
-                        {loading ? 'Creating...' : 'Create Adjustment'}
+                        {loading ? t('managerAdjustment.creating') : t('managerAdjustment.createAdjustment')}
                     </button>
                     <button
                         type="button"
@@ -264,7 +265,7 @@ function ManagerCreateAdjustment() {
                         onClick={() => navigate('/dashboard/transactions')}
                         disabled={loading}
                     >
-                        Cancel
+                        {t('managerAdjustment.cancel')}
                     </button>
                 </div>
             </form>

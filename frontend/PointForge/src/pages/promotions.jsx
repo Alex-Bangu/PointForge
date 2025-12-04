@@ -14,7 +14,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
-import { useLanguage } from '../contexts/LanguageContext.jsx';
+import { useLanguage, translatePromotionDescription } from '../contexts/LanguageContext.jsx';
 import {
     Loading,
     Error,
@@ -413,8 +413,8 @@ function Promotions() {
         const statusClass = `status-${promotion.status}`;
         
         // Format reward display: show rate as percentage or points
-        const rateDisplay = promotion.rate ? `${Math.round(promotion.rate * 100)}% bonus` : null;
-        const pointsDisplay = promotion.points ? `${promotion.points} pts` : null;
+        const rateDisplay = promotion.rate ? `${Math.round(promotion.rate * 100)}% ${t('promotionCard.bonus')}` : null;
+        const pointsDisplay = promotion.points ? `${promotion.points} ${t('promotionCard.points')}` : null;
         const minSpend = promotion.minSpending ? `$${promotion.minSpending}` : t('promotions.noMinimum');
         
         // Determine if user can add this promotion to wallet (regular users + one-time promotions only)
@@ -429,14 +429,19 @@ function Promotions() {
                 <div className="card-badges">
                     {/* Only show status badge for managers/superusers (regular users don't need it since all are active) */}
                     {isManager && (
-                        <span className={`promo-badge ${statusClass}`}>{promotion.status}</span>
+                        <span className={`promo-badge ${statusClass}`}>
+                            {promotion.status === 'active' ? t('promotions.statusActive') :
+                             promotion.status === 'upcoming' ? t('promotions.statusUpcoming') :
+                             promotion.status === 'ended' ? t('promotions.statusEnded') :
+                             promotion.status}
+                        </span>
                     )}
                     <span className="promo-badge type">{promotion.isOneTime ? t('promotions.typeOneTime') : t('promotions.typeAutomatic')}</span>
                 </div>
                 
                 {/* Promotion name and description */}
                 <h3>{promotion.name}</h3>
-                <p>{promotion.description}</p>
+                <p>{translatePromotionDescription(promotion.description, t)}</p>
                 
                 {/* Promotion metadata: valid through date, minimum spending, reward */}
                 <div className="promo-card-meta">
@@ -471,12 +476,12 @@ function Promotions() {
                 {isManager && (
                     <div className="promo-card-actions">
                         <button className="secondary-btn" onClick={() => handleModalOpen('edit', promotion)}>
-                            Edit
+                            {t('promotions.edit')}
                         </button>
                         {/* Only show delete button for promotions that haven't started yet */}
                         {promotion.isUpcoming && (
                             <button className="secondary-btn" onClick={() => handleDeletePromotion(promotion)}>
-                                Delete
+                                {t('promotions.delete')}
                             </button>
                         )}
                     </div>
@@ -542,7 +547,7 @@ function Promotions() {
                             {/* Column 1: Start date filters */}
                             <div className="filters-advanced-column">
                                 <label>
-                                    Start before
+                                    {t('promotions.startBefore')}
                                     <input
                                         type="datetime-local"
                                         value={filters.startBefore}
@@ -550,7 +555,7 @@ function Promotions() {
                                     />
                                 </label>
                                 <label>
-                                    Start after
+                                    {t('promotions.startAfter')}
                                     <input
                                         type="datetime-local"
                                         value={filters.startAfter}
@@ -561,7 +566,7 @@ function Promotions() {
                             {/* Column 2: End date filters */}
                             <div className="filters-advanced-column">
                                 <label>
-                                    End before
+                                    {t('promotions.endBefore')}
                                     <input
                                         type="datetime-local"
                                         value={filters.endBefore}
@@ -569,7 +574,7 @@ function Promotions() {
                                     />
                                 </label>
                                 <label>
-                                    End after
+                                    {t('promotions.endAfter')}
                                     <input
                                         type="datetime-local"
                                         value={filters.endAfter}
@@ -580,7 +585,7 @@ function Promotions() {
                             {/* Column 3: Minimum spending filters */}
                             <div className="filters-advanced-column">
                                 <label>
-                                    Min spend ≤
+                                    {t('promotions.minSpendMax')}
                                     <input
                                         type="number"
                                         value={filters.minSpendingMax}
@@ -589,7 +594,7 @@ function Promotions() {
                                     />
                                 </label>
                                 <label>
-                                    Min spend ≥
+                                    {t('promotions.minSpendMin')}
                                     <input
                                         type="number"
                                         value={filters.minSpendingMin}
@@ -601,7 +606,7 @@ function Promotions() {
                             {/* Column 4: Bonus rate filters */}
                             <div className="filters-advanced-column">
                                 <label>
-                                    Rate ≤ (%)
+                                    {t('promotions.rateMax')}
                                     <input
                                         type="number"
                                         value={filters.rateMax}
@@ -610,7 +615,7 @@ function Promotions() {
                                     />
                                 </label>
                                 <label>
-                                    Rate ≥ (%)
+                                    {t('promotions.rateMin')}
                                     <input
                                         type="number"
                                         value={filters.rateMin}
@@ -622,7 +627,7 @@ function Promotions() {
                             {/* Column 5: Points filters */}
                             <div className="filters-advanced-column">
                                 <label>
-                                    Points ≤
+                                    {t('promotions.pointsMax')}
                                     <input
                                         type="number"
                                         value={filters.pointsMax}
@@ -630,7 +635,7 @@ function Promotions() {
                                     />
                                 </label>
                                 <label>
-                                    Points ≥
+                                    {t('promotions.pointsMin')}
                                     <input
                                         type="number"
                                         value={filters.pointsMin}
@@ -664,15 +669,15 @@ function Promotions() {
             {totalPages > 1 && (
                 <div className="pagination">
                     <button type="button" disabled={page === 1} onClick={() => setPage((prev) => Math.max(1, prev - 1))}>
-                        Previous
+                        {t('pagination.previous')}
                     </button>
-                    <span className="results-meta">Page {page} of {totalPages}</span>
+                    <span className="results-meta">{t('pagination.page')} {page} {t('pagination.of')} {totalPages}</span>
                     <button
                         type="button"
                         disabled={page === totalPages}
                         onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                     >
-                        Next
+                        {t('pagination.next')}
                     </button>
                 </div>
             )}
@@ -704,10 +709,10 @@ function Promotions() {
             {/* Confirmation modal - asks user to confirm before adding promotion to wallet */}
             <ConfirmModal
                 isOpen={confirmModalOpen}
-                title="Add to Wallet?"
-                message="Are you sure you want to add this promotion to your wallet?"
-                confirmText="Add to Wallet"
-                cancelText="Cancel"
+                title={t('promotions.addToWalletConfirmTitle')}
+                message={t('promotions.addToWalletConfirmMessage')}
+                confirmText={t('promotions.addToWalletConfirmButton')}
+                cancelText={t('common.cancel')}
                 onConfirm={handleApplyPromotion}
                 onCancel={() => {
                     setConfirmModalOpen(false);

@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
+import { useLanguage, translatePromotionDescription } from '../contexts/LanguageContext.jsx';
 import {
     Loading,
     Error,
@@ -15,6 +16,7 @@ function PromotionDetail() {
     const { promotionId } = useParams();
     const navigate = useNavigate();
     const { user } = useContext(UserContext);
+    const { t } = useLanguage();
     const isManager = user?.role === 'manager' || user?.role === 'superuser';
     const isRegular = user?.role === 'regular';
 
@@ -173,7 +175,7 @@ function PromotionDetail() {
                     </div>
                 </div>
                 <h2>{promotion.name}</h2>
-                <p>{promotion.description}</p>
+                <p>{translatePromotionDescription(promotion.description, t)}</p>
                 <div className="promotion-meta-grid">
                     <div className="promotion-meta-item">
                         <span>Starts</span>

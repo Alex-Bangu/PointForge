@@ -157,7 +157,7 @@ function Transactions() {
                 }
                 
                 if (!response.ok) {
-                    throw new Error(payload.message || payload.Message || 'Unable to load transactions');
+                    throw new Error(payload.message || payload.Message || t('error.unableToLoadTransactions'));
                 }
                 
                 // Client-side filtering for points and spent amounts
@@ -269,7 +269,7 @@ function Transactions() {
                     // User is being logged out by authenticatedFetch, just return
                     return;
                 }
-                setError(err.message || 'Unable to load transactions');
+                setError(err.message || t('error.unableToLoadTransactions'));
             } finally {
                 setLoading(false);
             }
@@ -361,7 +361,7 @@ function Transactions() {
                             {/* Column 1: Points Amount Filters */}
                             <div className="filters-advanced-column">
                                 <label>
-                                    Points Amount ≥
+                                    {t('transactions.pointsAmountMin')}
                                     <input
                                         type="number"
                                         value={filters.pointsMin}
@@ -370,7 +370,7 @@ function Transactions() {
                                     />
                                 </label>
                                 <label>
-                                    Points Amount ≤
+                                    {t('transactions.pointsAmountMax')}
                                     <input
                                         type="number"
                                         value={filters.pointsMax}
@@ -383,7 +383,7 @@ function Transactions() {
                             {/* Column 2: Spent Amount Filters (for purchases) */}
                             <div className="filters-advanced-column">
                                 <label>
-                                    Spent Amount ≥ ($)
+                                    {t('transactions.spentAmountMin')}
                                     <input
                                         type="number"
                                         step="0.01"
@@ -393,7 +393,7 @@ function Transactions() {
                                     />
                                 </label>
                                 <label>
-                                    Spent Amount ≤ ($)
+                                    {t('transactions.spentAmountMax')}
                                     <input
                                         type="number"
                                         step="0.01"
@@ -407,10 +407,10 @@ function Transactions() {
                             {/* Column 3: Promotion ID */}
                             <div className="filters-advanced-column">
                                 <label>
-                                    Promotion ID
+                                    {t('transactions.promotionId')}
                                     <input
                                         type="number"
-                                        placeholder="Promotion ID"
+                                        placeholder={t('transactions.promotionId')}
                                         value={filters.promotionId}
                                         onChange={(e) => handleFilterChange('promotionId', e.target.value)}
                                     />
@@ -422,19 +422,19 @@ function Transactions() {
                                 <>
                                     <div className="filters-advanced-column">
                                         <label>
-                                            Search by user
+                                            {t('transactions.searchByUser')}
                                             <input
                                                 type="text"
-                                                placeholder="Name or UTORid"
+                                                placeholder={t('transactions.userPlaceholder')}
                                                 value={filters.name}
                                                 onChange={(e) => handleFilterChange('name', e.target.value)}
                                             />
                                         </label>
                                         <label>
-                                            Created by
+                                            {t('transactions.createdBy')}
                                             <input
                                                 type="text"
-                                                placeholder="UTORid"
+                                                placeholder={t('transactions.createdByPlaceholder')}
                                                 value={filters.createdBy}
                                                 onChange={(e) => handleFilterChange('createdBy', e.target.value)}
                                             />
@@ -442,14 +442,14 @@ function Transactions() {
                                     </div>
                                     <div className="filters-advanced-column">
                                         <label>
-                                            Suspicious Status
+                                            {t('transactions.suspiciousStatus')}
                                             <select
                                                 value={filters.suspicious}
                                                 onChange={(e) => handleFilterChange('suspicious', e.target.value)}
                                             >
-                                                <option value="all">All</option>
-                                                <option value="true">Suspicious</option>
-                                                <option value="false">Not Suspicious</option>
+                                                <option value="all">{t('transactions.suspiciousAll')}</option>
+                                                <option value="true">{t('transactions.suspiciousTrue')}</option>
+                                                <option value="false">{t('transactions.suspiciousFalse')}</option>
                                             </select>
                                         </label>
                                     </div>
@@ -503,15 +503,15 @@ function Transactions() {
                         disabled={page === 1} 
                         onClick={() => setPage(prev => Math.max(1, prev - 1))}
                     >
-                        Previous
+                        {t('pagination.previous')}
                     </button>
-                    <span className="results-meta">Page {page} of {totalPages}</span>
+                    <span className="results-meta">{t('pagination.page')} {page} {t('pagination.of')} {totalPages}</span>
                     <button
                         type="button"
                         disabled={page === totalPages}
                         onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
                     >
-                        Next
+                        {t('pagination.next')}
                     </button>
                 </div>
             )}

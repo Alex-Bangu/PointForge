@@ -54,7 +54,7 @@ function TransactionDetailModal({ transactionId, isOpen, onClose }) {
                     payload = await response.json();
                 } else {
                     const text = await response.text();
-                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                    throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
                 }
 
                 if (!response.ok) {
@@ -130,7 +130,7 @@ function TransactionDetailModal({ transactionId, isOpen, onClose }) {
                         <div className="transaction-detail-header">
                             <div className="transaction-detail-header-title">
                                 <h2 style={{ color: getTypeColor(transaction.type) }}>
-                                    {getTypeLabel(transaction.type)} {t('transactionDetail.type')}
+                                    {getTypeLabel(transaction.type)}
                                 </h2>
                                 {transaction.suspicious && (
                                     <span className="transaction-badge transaction-badge--suspicious">{t('transactionDetail.suspicious')}</span>
@@ -158,7 +158,7 @@ function TransactionDetailModal({ transactionId, isOpen, onClose }) {
                                         </div>
                                         <div className="transaction-detail-item">
                                             <span>{t('transactionDetail.pointsEarned')}</span>
-                                            <strong>+{transaction.amount || 0} pts</strong>
+                                            <strong>+{transaction.amount || 0} {t('transactionCard.points')}</strong>
                                         </div>
                                     </>
                                 )}
@@ -166,7 +166,7 @@ function TransactionDetailModal({ transactionId, isOpen, onClose }) {
                                 {transaction.type === 'redemption' && (
                                     <div className="transaction-detail-item">
                                         <span>{t('transactionDetail.pointsRedeemed')}</span>
-                                        <strong>{Math.abs(transaction.redeemed || transaction.amount || 0)} pts</strong>
+                                        <strong>{Math.abs(transaction.redeemed || transaction.amount || 0)} {t('transactionCard.points')}</strong>
                                     </div>
                                 )}
 
@@ -182,7 +182,7 @@ function TransactionDetailModal({ transactionId, isOpen, onClose }) {
                                         </div>
                                         <div className="transaction-detail-item">
                                             <span>{t('transactionDetail.amount')}</span>
-                                            <strong>{transaction.sent || Math.abs(transaction.amount || 0)} pts</strong>
+                                            <strong>{transaction.sent || Math.abs(transaction.amount || 0)} {t('transactionCard.points')}</strong>
                                         </div>
                                     </>
                                 )}
@@ -195,7 +195,7 @@ function TransactionDetailModal({ transactionId, isOpen, onClose }) {
                                         </div>
                                         <div className="transaction-detail-item">
                                             <span>{t('transactionDetail.pointsAwarded')}</span>
-                                            <strong>+{transaction.awarded || transaction.amount || 0} pts</strong>
+                                            <strong>+{transaction.awarded || transaction.amount || 0} {t('transactionCard.points')}</strong>
                                         </div>
                                     </>
                                 )}
@@ -208,7 +208,7 @@ function TransactionDetailModal({ transactionId, isOpen, onClose }) {
                                         </div>
                                         <div className="transaction-detail-item">
                                             <span>{t('transactionDetail.adjustmentAmount')}</span>
-                                            <strong>{(transaction.amount >= 0 ? '+' : '')}{transaction.amount || 0} pts</strong>
+                                            <strong>{(transaction.amount >= 0 ? '+' : '')}{transaction.amount || 0} {t('transactionCard.points')}</strong>
                                         </div>
                                         {transaction.relatedId && (
                                             <div className="transaction-detail-item">
