@@ -42,7 +42,6 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalBusy, setModalBusy] = useState(false);
     const [modalError, setModalError] = useState('');
-    const [carryModalError, setCarryModalError] = useState('');
 
     // State for distributing points
     const [pointsModalOpen, setPointsModalOpen] = useState(false);
@@ -258,9 +257,8 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
             if(!response.ok) {
                 console.log(body)
                 console.log(body.message);
-                const errorMessage = body.message;
-                setCarryModalError(errorMessage);
-                throw new Error(errorMessage);
+                setModalError(body.message);
+                throw new Error(body.message);
             }
         } catch (err) {
             console.log(err);
@@ -290,7 +288,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                 if (response.status !== 204) {
                     const payload = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        setCarryModalError(payload.message);
+                        setModalError(payload.message);
                         throw new Error(payload.message || payload.Message || 'Unable to delete event');
                     }
                 }
@@ -302,7 +300,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                 if (response.status !== 204) {
                     const payload = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        setCarryModalError(payload.message);
+                        setModalError(payload.message);
                         throw new Error(payload.message || payload.Message || 'Unable to delete event');
                     }
                 }
@@ -317,7 +315,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                     console.log(body)
                     console.log(body.message);
                     const errorMessage = body.message;
-                    setCarryModalError(errorMessage);
+                    setModalError(errorMessage);
                     throw new Error(errorMessage);
                 }
             }
@@ -331,7 +329,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                     console.log(body)
                     console.log(body.message);
                     const errorMessage = body.message;
-                    setCarryModalError(errorMessage);
+                    setModalError(errorMessage);
                     throw new Error(errorMessage);
                 }
             }
@@ -347,16 +345,15 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
     const handleEditorSave = async (payloads) => {
         console.log("payloads: ", payloads);
         const save = await handleSave(payloads[0]);
+        if(save === 1) {
+            return 1;
+        }
         const utorids = await handleUtoridActions(payloads[1]);
-        if( save === 0 && utorids === 0) {
+        if(utorids === 0) {
             setModalOpen(false);  // Close edit modal
             refresh();  // Refresh to show updated data
             console.log("refreshed");
-            setCarryModalError('');
             setModalError('');
-        } else {
-            console.log("carryModal: ", carryModalError);
-            setModalError(carryModalError);
         }
         return save || utorids;
     }
