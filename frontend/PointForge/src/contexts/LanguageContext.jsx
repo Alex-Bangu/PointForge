@@ -214,6 +214,7 @@ const translations = {
         'eventDetail.confirmRescindMessage': 'Are you sure you want to rescind your RSVP? You are not guarenteed a spot if you change your mind.',
         'eventDetail.confirmRescindButton': 'Rescind RSVP',
         'eventDetail.deleteConfirm': 'Delete this event? This cannot be undone.',
+        'eventDetail.distributePoints': 'Distribute Points',
         // Promotions Page
         'promotions.title': 'Promotions',
         'promotions.subtitle': 'Discover the best ways to earn extra value.',

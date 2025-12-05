@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext.jsx';
 import Loading from './Loading.jsx';
 import Error from './Error.jsx';
 import EventEditorModal from './EventEditorModal.jsx';
+import EventPointsModal from './EventPointsModal.jsx';
 import ConfirmModal from './ConfirmModal.jsx';
 import GoogleMapsEmbed from './GoogleMapsEmbed.jsx';
 import { authenticatedFetch } from '../utils/api.js';
@@ -42,6 +43,11 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
     const [modalBusy, setModalBusy] = useState(false);
     const [modalError, setModalError] = useState('');
     const [carryModalError, setCarryModalError] = useState('');
+
+    // State for distributing points
+    const [pointsModalOpen, setPointsModalOpen] = useState(false);
+    const [pointsModalBusy, setPointsModalBusy] = useState(false);
+    const [pointsModalError, setPointsModalError] = useState('');
 
     // State for adding events to wallet (regular users)
     const [applying, setApplying] = useState(false);
@@ -355,6 +361,29 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
         return save || utorids;
     }
 
+    const handleDistributePoints = async (payload) => {
+        setPointsModalBusy(true);
+        setPointsModalError('');
+        try {
+            const response = await authenticatedFetch(`/events/${eventId}/transactions`, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            });
+
+            const body = await response.json();
+            if (!response.ok) {
+                throw new Error(body.message || 'Failed to distribute points');
+            }
+
+            setPointsModalOpen(false);
+            refresh(); // Refresh the event details
+        } catch (err) {
+            setPointsModalError(err.message);
+        } finally {
+            setPointsModalBusy(false);
+        }
+    };
+
     const showDetailModal = isOpen && !confirmModalOpen && !removeConfirmModalOpen;
 
     // Keep component mounted if confirmation modals are open, even if detail modal is closed
@@ -454,6 +483,11 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                                 {t('eventDetail.editEvent')}
                             </button>
                     )}
+                    {(isManager || isOrganizer) && (
+                        <button className="secondary-btn" onClick={() => setPointsModalOpen(true)}>
+                            {t('eventDetail.distributePoints')}
+                        </button>
+                    )}
                     {isManager && (
                         <button className="secondary-btn" onClick={handleDelete}>
                             {t('eventDetail.deleteEvent')}
@@ -522,6 +556,15 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                         setModalError('');
                     }}
                     onSubmit={handleEditorSave}
+                />
+
+                <EventPointsModal
+                    isOpen={pointsModalOpen}
+                    event={event}
+                    onClose={() => setPointsModalOpen(false)}
+                    onSubmit={handleDistributePoints}
+                    busy={pointsModalBusy}
+                    error={pointsModalError}
                 />
             </div>
         </div>

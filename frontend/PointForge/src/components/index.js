@@ -8,6 +8,7 @@ export { default as PromotionDetailModal } from './PromotionDetailModal.jsx';
 export { default as PromotionEditorModal } from './PromotionEditorModal.jsx';
 export { default as EventDetailModal } from './EventDetailModal.jsx';
 export { default as EventEditorModal } from './EventEditorModal.jsx';
+export { default as EventPointsModal } from './EventPointsModal.jsx';
 export { default as TransactionDetailModal } from './TransactionDetailModal.jsx';
 export { default as UserDetailModal } from './UserDetailModal.jsx';
 export { default as QRCodeDisplay } from './QRCodeDisplay.jsx';

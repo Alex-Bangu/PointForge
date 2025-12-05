@@ -754,13 +754,18 @@ router.route('/:eventId')
         if(endTime) {
             const validEnd = isValidISODate(endTime);
             if(validEnd) {
-                if(Date.parse(endTime) < Date.now()) {
+                if(Date.parse(endTime) < Date.now() || (Date.parse(endTime) < Date.parse(event.startTime))) {
                     return res.status(400).json({"message": "Bad end time"});
                 } else {
                     data.endTime = endTime;
                 }
             } else {
                 return res.status(400).json({"message": "Invalid endTime"});
+            }
+        }
+        if(endTime && startTime) {
+            if(Date.parse(endTime) < Date.parse(startTime)) {
+                return res.status(400).json({"message": "End time cannot be less than start time"});
             }
         }
         if(capacity || capacity === 0) {
