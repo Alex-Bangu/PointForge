@@ -548,7 +548,7 @@ router.patch("/me/password", auth, async (req, res) => {
     const oldPass = req.body.old;
     const newPass = req.body.new;
     if(!oldPass || !newPass) {
-        return res.status(400).json({"Message": "Bad request"});
+        return res.status(400).json({"Message": "You must supply both the old and new password"});
     }
     const user = await prisma.user.findUnique({
         where: {id: req.auth.id}
@@ -557,7 +557,7 @@ router.patch("/me/password", auth, async (req, res) => {
         return res.status(404).json({"Message": "How did you get here?"});
     }
     if(!user.password) {
-        return res.status(400).json({"Message": "Bad Request"});
+        return res.status(400).json({"Message": "You do not yet have an initial password"});
     }
     const valid = await bcrypt.compare(oldPass, user.password);
     if(!valid) {
@@ -565,7 +565,7 @@ router.patch("/me/password", auth, async (req, res) => {
     }
     const goodPassword = passwordRegex.test(newPass);
     if(!goodPassword) {
-        return res.status(400).json({"Message": "Bad request"});
+        return res.status(400).json({"Message": "New password must be 8 - 128 characters long, alphanumeric, include a capital letter, number, and symbol"});
     }
     const hashedPassword = await bcrypt.hash(newPass, 10);
     await prisma.user.update({

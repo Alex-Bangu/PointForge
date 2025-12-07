@@ -154,6 +154,8 @@ function Account() {
 
             if (!response.ok) {
                 const data = await response.json();
+                setPasswordError(data.message || data.Message);
+                console.log(data.message || data.Message);
                 throw new Error(data.Message || data.message || 'Failed to update password');
             }
 
@@ -161,7 +163,7 @@ function Account() {
             setPasswordForm({ old: '', new: '', confirm: '' });
             setTimeout(() => setPasswordSuccess(false), 3000);
         } catch (err) {
-            setPasswordError(err.message || 'Failed to update password');
+            console.log(err);
         } finally {
             setPasswordLoading(false);
         }

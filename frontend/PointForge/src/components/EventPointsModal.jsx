@@ -72,6 +72,7 @@ function EventPointsModal({ isOpen, event, onClose, onSubmit, busy = false, erro
                 <form className="event-modal__form" onSubmit={handleSubmit}>
                     <div className="points-info">
                         <span>Points Remaining in Event: <strong>{event?.pointsRemain || 0}</strong></span>
+                        <br></br>
                         <span>RSVP'd Guests: <strong>{event?.guests?.length || 0}</strong></span>
                     </div>
 

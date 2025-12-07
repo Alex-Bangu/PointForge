@@ -159,8 +159,6 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
         }
     };
 
-    // Show confirmation modal before removing from wallet
-    // Hide the detail modal overlay to prevent stacking
     const handleRemoveClick = () => {
         if(!event) {
             return;
@@ -168,20 +166,18 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
         setRemoveConfirmModalOpen(true);
     };
 
-    // Actually remove the event from wallet after user confirms
     const handleRemove = async () => {
         console.log("removing");
         if(!event) {
             return;
         }
-        setRemoveConfirmModalOpen(false);  // Close confirmation modal
+        setRemoveConfirmModalOpen(false);
         setRemoving(true);
         try {
             const response = await authenticatedFetch(`/events/${event.id}/guests/me`, {
                 method: 'DELETE'
             });
 
-            // authenticatedFetch handles 401 automatically
             if(response.status === 401) {
                 throw new Error(t('error.sessionExpired'));
             }
@@ -192,12 +188,11 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                 console.log("unable");
                 throw new Error(payload.message || t('eventDetail.rescindRSVP') + ' failed');
             }
-            // Refresh user data (which includes events) before closing modal
-            // This ensures the wallet list updates immediately
+
             if(refreshUserData) {
                 await refreshUserData();
             }
-            // Notify parent to refresh its list as well
+
             if(onEventUpdated) {
                 onEventUpdated();
             }
@@ -207,16 +202,15 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
         } catch (err) {
             console.log("error came up");
             setError(err.message || t('eventDetail.rescindRSVP') + ' failed');
-            setRemoving(false);  // Only set removing to false on error (on success, modal closes)
+            setRemoving(false);
         }
     };
 
-    // Delete event (managers only)
     const handleDelete = async () => {
         if(!event) {
             return;
         }
-        // Confirm deletion - destructive action
+
         const confirmed = window.confirm(t('eventDetail.deleteConfirm'));
         if(!confirmed) {
             return;
@@ -231,16 +225,15 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
                     throw new Error(payload.message || payload.Message || t('error.unableToDelete') + ' event');
                 }
             }
-            onClose();  // Close modal after successful deletion
+            onClose();
             if(onEventUpdated) {
-                onEventUpdated();  // Refresh parent list
+                onEventUpdated();
             }
         } catch (err) {
             setError(err.message || t('error.unableToDelete') + ' event');
         }
     };
 
-    // Save edited event (managers only)
     const handleSave = async (values) => {
         if(!event) {
             return;
@@ -373,7 +366,7 @@ function EventDetailModal({ eventId, isOpen, onClose, onEventUpdated }) {
             }
 
             setPointsModalOpen(false);
-            refresh(); // Refresh the event details
+            refresh();
         } catch (err) {
             setPointsModalError(err.message);
         } finally {

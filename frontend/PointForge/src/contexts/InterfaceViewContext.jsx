@@ -16,7 +16,7 @@ export function InterfaceViewProvider({ children }) {
     const getInitialInterfaceView = () => {
         if (typeof window === 'undefined') return null; // SSR safety
         const savedView = localStorage.getItem('interfaceView');
-        if (savedView && ['regular', 'cashier', 'manager', 'organizer'].includes(savedView)) {
+        if (savedView && ['regular', 'cashier', 'manager'].includes(savedView)) {
             return savedView;
         }
         return null;
@@ -46,11 +46,6 @@ export function InterfaceViewProvider({ children }) {
         
         if (user.role === 'manager' || user.role === 'superuser') {
             availableViews.push('manager');
-        }
-        
-        // Check if user is an event organizer (has organized events)
-        if (user.organizedEvents && user.organizedEvents.length > 0) {
-            availableViews.push('organizer');
         }
     }
 
