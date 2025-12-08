@@ -385,7 +385,7 @@ router.get('/', auth, async (req, res) => {
     if(!higherRoles.includes(req.auth.role)) {
         return res.status(403).json({"message": "Forbidden"});
     }
-    let {name, createdBy, suspicious, promotionId, type, relatedId, amount, operator, page, limit} = req.query;
+    let {name, createdBy, suspicious, promotionId, type, relatedId, amount, operator, page, limit, sortBy, sortOrder} = req.query;
     // type checking
     let data = {};
     let filter = {};
@@ -467,6 +467,13 @@ router.get('/', auth, async (req, res) => {
     } else {
         limit = 10;
     }
+    // Parse sorting parameters
+    if (!sortBy) {
+        sortBy = 'id';
+    }
+    if (!sortOrder || (sortOrder !== 'asc' && sortOrder !== 'desc')) {
+        sortOrder = 'desc';
+    }
     const transactions = await prisma.transaction.findMany({
         where: data,
         include: {
@@ -505,6 +512,41 @@ router.get('/', auth, async (req, res) => {
             filtered.push(transactions[i]);
         }
     }
+    // Sort filtered results before pagination
+    filtered.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch (sortBy) {
+            case 'type':
+                aVal = a.type || '';
+                bVal = b.type || '';
+                break;
+            case 'amount':
+                aVal = a.amount || 0;
+                bVal = b.amount || 0;
+                break;
+            case 'date':
+                aVal = a.date ? new Date(a.date).getTime() : 0;
+                bVal = b.date ? new Date(b.date).getTime() : 0;
+                break;
+            case 'id':
+            default:
+                aVal = a.id || 0;
+                bVal = b.id || 0;
+                break;
+        }
+        
+        if (typeof aVal === 'string') {
+            return sortOrder === 'asc' 
+                ? aVal.localeCompare(bVal)
+                : bVal.localeCompare(aVal);
+        } else {
+            return sortOrder === 'asc' 
+                ? aVal - bVal
+                : bVal - aVal;
+        }
+    });
+    
     const count = filtered.length;
     let toReturn = filtered.slice((page - 1) * limit, page * limit);
     let toReturnJson = [];
