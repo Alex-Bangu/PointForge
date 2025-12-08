@@ -694,7 +694,8 @@ router.get("/:transactionId", auth, async (req, res) => {
         },
         include: {
             promotions: true,
-            issuer: true
+            issuer: true,
+            receiver: true,
         }
     });
     if(!transaction) {
@@ -719,7 +720,9 @@ router.get("/:transactionId", auth, async (req, res) => {
         "suspicious": transaction.suspicious,
         "remark": transaction.remark,
         "createdBy": transaction.issuer.utorid,
-        "relatedId": transaction.relatedId
+        "relatedId": transaction.relatedId,
+        "issuer": transaction.issuer.utorid,
+        "receiver": transaction.receiver.utorid
     });
 });
 
