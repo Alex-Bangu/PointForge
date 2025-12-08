@@ -637,7 +637,7 @@ router.post('/me/transactions', auth, async (req, res) => {
 });
 
 router.get('/me/transactions', auth, async (req, res) => {
-    let {type, relatedId, promotionId, amount, operator, page, limit} = req.query;
+    let {type, relatedId, promotionId, amount, operator, page, limit, sortBy, sortOrder} = req.query;
     let data = {};
     let filter = {};
     if(type) {
@@ -691,6 +691,13 @@ router.get('/me/transactions', auth, async (req, res) => {
     }  else {
         limit = 10;
     }
+    // Parse sorting parameters
+    if (!sortBy) {
+        sortBy = 'id';
+    }
+    if (!sortOrder || (sortOrder !== 'asc' && sortOrder !== 'desc')) {
+        sortOrder = 'desc';
+    }
     data.receiverId = req.auth.id;
     const transactions = await prisma.transaction.findMany({
         where: data,
@@ -716,9 +723,43 @@ router.get('/me/transactions', auth, async (req, res) => {
             filteredTransactions.push(transactions[i]);
         }
     }
+    // Sort filtered results before pagination
+    filteredTransactions.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch (sortBy) {
+            case 'type':
+                aVal = a.type || '';
+                bVal = b.type || '';
+                break;
+            case 'amount':
+                aVal = a.amount || 0;
+                bVal = b.amount || 0;
+                break;
+            case 'date':
+                aVal = a.date ? new Date(a.date).getTime() : 0;
+                bVal = b.date ? new Date(b.date).getTime() : 0;
+                break;
+            case 'id':
+            default:
+                aVal = a.id || 0;
+                bVal = b.id || 0;
+                break;
+        }
+        
+        if (typeof aVal === 'string') {
+            return sortOrder === 'asc' 
+                ? aVal.localeCompare(bVal)
+                : bVal.localeCompare(aVal);
+        } else {
+            return sortOrder === 'asc' 
+                ? aVal - bVal
+                : bVal - aVal;
+        }
+    });
+    
     const count = filteredTransactions.length;
     let toReturn = filteredTransactions.slice((page - 1) * limit, page * limit);
-    toReturn.reverse();
     let toReturnJson = [];
     for(let i = 0; i < toReturn.length; i++) {
         let data = {};
