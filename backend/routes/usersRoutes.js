@@ -482,6 +482,15 @@ router.patch("/:userId", auth, async (req, res) => {
         return res.status(400).json({"Message": "Bad request"});
     }
 
+    // New validation logic
+    const isBecomingStaff = role === 'cashier' || role === 'manager' || role === 'superuser';
+    const isAlreadySuspicious = user.suspicious;
+    const isBeingMarkedSuspicious = suspicious === true;
+
+    if (isBecomingStaff && (isAlreadySuspicious || isBeingMarkedSuspicious)) {
+        return res.status(403).json({"Message": "Forbidden: A suspicious user cannot be promoted to a staff role."});
+    }
+
     if(email) {
         const valid = emailRegex.test(email);
         if(!valid) {
@@ -516,6 +525,9 @@ router.patch("/:userId", auth, async (req, res) => {
     }
     if(role) {
         if(req.auth.role === "manager") {
+            if (user.role === 'manager' || user.role === 'superuser') {
+                return res.status(403).json({"Message": "Forbidden: Managers cannot change the role of other managers or superusers."});
+            }
             if(role === "regular" || role === "cashier") {
                 await prisma.user.update({
                     where: {id: user.id},

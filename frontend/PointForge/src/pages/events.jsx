@@ -31,7 +31,7 @@ const PAGE_SIZE = 12;
 
 function Events() {
     // Get current user from context to determine permissions and default filters
-    const { user } = useContext(UserContext);
+    const { user, refreshUserData } = useContext(UserContext);
     const { t } = useLanguage();
     const isManager = user?.role === 'manager' || user?.role === 'superuser';
     const isRegular = user?.role === 'regular';
@@ -432,14 +432,13 @@ function Events() {
                 setError(payload.message || t('error.unableToRSVP'));
                 throw new Error(payload.message || t('error.unableToRSVP'));
             }
-            // Refresh to show updated status (no success popup)
-            setRefreshKey((key) => key + 1);  // Trigger re-fetch
+            // Refresh the user's data to update the attendedEvents list
+            refreshUserData();
         } catch (err) {
             console.log(err);
         } finally {
             setApplyingId(null);  // Clear loading state
             setEventToApply(null);  // Clear event to apply
-            setRefreshKey((key) => key + 1);  // Trigger re-fetch
         }
     };
 

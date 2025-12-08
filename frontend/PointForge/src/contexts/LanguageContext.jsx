@@ -447,6 +447,8 @@ const translations = {
         'userDetail.yes': 'Yes',
         'userDetail.no': 'No',
         'userDetail.inactive': 'Inactive',
+        'userDetail.cannotChangeHigherRole': 'You may not change the role of a user with an equal or higher role.',
+        'userDetail.cannotPromoteSuspicious': 'A suspicious user cannot be promoted to a staff role.',
         // Transaction Card
         'transactionCard.to': 'To:',
         'transactionCard.from': 'From:',
@@ -1073,6 +1075,8 @@ const translations = {
         'userDetail.yes': 'Sí',
         'userDetail.no': 'No',
         'userDetail.inactive': 'Inactivo',
+        'userDetail.cannotChangeHigherRole': 'No puedes cambiar el rol de un usuario con un rol igual o superior.',
+        'userDetail.cannotPromoteSuspicious': 'Un usuario sospechoso no puede ser promovido a un rol de personal.',
         // Transaction Card
         'transactionCard.to': 'Para:',
         'transactionCard.from': 'De:',
@@ -1578,6 +1582,8 @@ const translations = {
         'userDetail.yes': 'Oui',
         'userDetail.no': 'Non',
         'userDetail.inactive': 'Inactif',
+        'userDetail.cannotChangeHigherRole': 'Vous ne pouvez pas modifier le rôle d\'un utilisateur ayant un rôle égal ou supérieur.',
+        'userDetail.cannotPromoteSuspicious': 'Un utilisateur suspect ne peut pas être promu à un rôle de personnel.',
         // Transaction Card
         'transactionCard.to': 'À:',
         'transactionCard.from': 'De:',
@@ -2083,6 +2089,8 @@ const translations = {
         'userDetail.yes': '是',
         'userDetail.no': '否',
         'userDetail.inactive': '未激活',
+        'userDetail.cannotChangeHigherRole': '您不能更改具有同等或更高级别角色的用户角色。',
+        'userDetail.cannotPromoteSuspicious': '可疑用户不能被提升为职员角色。',
         // Transaction Card
         'transactionCard.to': '至:',
         'transactionCard.from': '从:',
@@ -2583,6 +2591,8 @@ const translations = {
         'userDetail.yes': 'Ja',
         'userDetail.no': 'Nein',
         'userDetail.inactive': 'Inaktiv',
+        'userDetail.cannotChangeHigherRole': 'Sie dürfen die Rolle eines Benutzers mit einer gleichwertigen oder höheren Rolle nicht ändern.',
+        'userDetail.cannotPromoteSuspicious': 'Ein verdächtiger Benutzer kann nicht zu einer Personalrolle befördert werden.',
         // Transaction Card
         'transactionCard.to': 'An:',
         'transactionCard.from': 'Von:',
@@ -3002,6 +3012,8 @@ const translations = {
         'userDetail.yes': 'Sì',
         'userDetail.no': 'No',
         'userDetail.inactive': 'Inattivo',
+        'userDetail.cannotChangeHigherRole': 'Non è consentito modificare il ruolo di un utente con un ruolo uguale o superiore.',
+        'userDetail.cannotPromoteSuspicious': 'Un utente sospetto non può essere promosso a un ruolo di staff.',
         // Transaction Card
         'transactionCard.to': 'A:',
         'transactionCard.from': 'Da:',
@@ -3421,6 +3433,8 @@ const translations = {
         'userDetail.yes': 'Sim',
         'userDetail.no': 'Não',
         'userDetail.inactive': 'Inativo',
+        'userDetail.cannotChangeHigherRole': 'Você não pode alterar a função de um usuário com uma função igual ou superior.',
+        'userDetail.cannotPromoteSuspicious': 'Um usuário suspeito não pode ser promovido a uma função de equipe.',
         // Transaction Card
         'transactionCard.to': 'Para:',
         'transactionCard.from': 'De:',
@@ -3840,6 +3854,8 @@ const translations = {
         'userDetail.yes': 'Да',
         'userDetail.no': 'Нет',
         'userDetail.inactive': 'Неактивен',
+        'userDetail.cannotChangeHigherRole': 'Вы не можете изменить роль пользователя с равной или более высокой ролью.',
+        'userDetail.cannotPromoteSuspicious': 'Подозрительный пользователь не может быть повышен до роли персонала.',
         // Transaction Card
         'transactionCard.to': 'Кому:',
         'transactionCard.from': 'От:',
@@ -4259,6 +4275,8 @@ const translations = {
         'userDetail.yes': 'はい',
         'userDetail.no': 'いいえ',
         'userDetail.inactive': '非アクティブ',
+        'userDetail.cannotChangeHigherRole': '同等以上の役割を持つユーザーの役割を変更することはできません。',
+        'userDetail.cannotPromoteSuspicious': '不審なユーザーをスタッフの役割に昇格させることはできません。',
         // Transaction Card
         'transactionCard.to': '宛先:',
         'transactionCard.from': '送信元:',
@@ -4678,6 +4696,8 @@ const translations = {
         'userDetail.yes': '예',
         'userDetail.no': '아니오',
         'userDetail.inactive': '비활성',
+        'userDetail.cannotChangeHigherRole': '동등하거나 더 높은 역할을 가진 사용자의 역할을 변경할 수 없습니다.',
+        'userDetail.cannotPromoteSuspicious': '의심스러운 사용자는 직원 역할로 승격될 수 없습니다.',
         // Transaction Card
         'transactionCard.to': '받는 사람:',
         'transactionCard.from': '보낸 사람:',
@@ -5183,6 +5203,8 @@ const translations = {
         'userDetail.yes': 'نعم',
         'userDetail.no': 'لا',
         'userDetail.inactive': 'غير نشط',
+        'userDetail.cannotChangeHigherRole': 'لا يمكنك تغيير دور مستخدم لديه دور مساوٍ أو أعلى.',
+        'userDetail.cannotPromoteSuspicious': 'لا يمكن ترقية مستخدم مشبوه إلى دور موظف.',
         // Transaction Card
         'transactionCard.to': 'إلى:',
         'transactionCard.from': 'من:',
@@ -5799,6 +5821,8 @@ const translations = {
         'userDetail.yes': 'हाँ',
         'userDetail.no': 'नहीं',
         'userDetail.inactive': 'निष्क्रिय',
+        'userDetail.cannotChangeHigherRole': 'आप समान या उच्च भूमिका वाले उपयोगकर्ता की भूमिका नहीं बदल सकते।',
+        'userDetail.cannotPromoteSuspicious': 'एक संदिग्ध उपयोगकर्ता को स्टाफ भूमिका में पदोन्नत नहीं किया जा सकता है।',
         // Transaction Card
         'transactionCard.to': 'को:',
         'transactionCard.from': 'से:',
@@ -6433,6 +6457,8 @@ const translations = {
         'userDetail.yes': 'Ja',
         'userDetail.no': 'Nee',
         'userDetail.inactive': 'Inactief',
+        'userDetail.cannotChangeHigherRole': 'U mag de rol van een gebruiker met een gelijke of hogere rol niet wijzigen.',
+        'userDetail.cannotPromoteSuspicious': 'Een verdachte gebruiker kan niet worden gepromoveerd tot een personeelsrol.',
         // Transaction Card
         'transactionCard.to': 'Aan:',
         'transactionCard.from': 'Van:',
@@ -7067,6 +7093,8 @@ const translations = {
         'userDetail.yes': 'Tak',
         'userDetail.no': 'Nie',
         'userDetail.inactive': 'Nieaktywny',
+        'userDetail.cannotChangeHigherRole': 'Nie możesz zmienić roli użytkownika posiadającego równą lub wyższą rolę.',
+        'userDetail.cannotPromoteSuspicious': 'Podejrzany użytkownik nie może zostać awansowany do roli personelu.',
         // Transaction Card
         'transactionCard.to': 'Do:',
         'transactionCard.from': 'Od:',
@@ -7701,6 +7729,8 @@ const translations = {
         'userDetail.yes': 'Evet',
         'userDetail.no': 'Hayır',
         'userDetail.inactive': 'Pasif',
+        'userDetail.cannotChangeHigherRole': 'Eşit veya daha yüksek role sahip bir kullanıcının rolünü değiştiremezsiniz.',
+        'userDetail.cannotPromoteSuspicious': 'Şüpheli bir kullanıcı personel rolüne terfi ettirilemez.',
         // Transaction Card
         'transactionCard.to': 'Alıcı:',
         'transactionCard.from': 'Gönderen:',
@@ -8335,6 +8365,8 @@ const translations = {
         'userDetail.yes': 'Ja',
         'userDetail.no': 'Nej',
         'userDetail.inactive': 'Inaktiv',
+        'userDetail.cannotChangeHigherRole': 'Du får inte ändra rollen för en användare med en jämlik eller högre roll.',
+        'userDetail.cannotPromoteSuspicious': 'En misstänkt användare kan inte befordras till en personalroll.',
         // Transaction Card
         'transactionCard.to': 'Till:',
         'transactionCard.from': 'Från:',
@@ -8969,6 +9001,8 @@ const translations = {
         'userDetail.yes': 'Ja',
         'userDetail.no': 'Nei',
         'userDetail.inactive': 'Inaktiv',
+        'userDetail.cannotChangeHigherRole': 'Du kan ikke endre rollen til en bruker med lik eller høyere rolle.',
+        'userDetail.cannotPromoteSuspicious': 'En mistenkelig bruker kan ikke forfremmes til en personalrolle.',
         // Transaction Card
         'transactionCard.to': 'Til:',
         'transactionCard.from': 'Fra:',
@@ -9603,6 +9637,8 @@ const translations = {
         'userDetail.yes': 'Ja',
         'userDetail.no': 'Nej',
         'userDetail.inactive': 'Inaktiv',
+        'userDetail.cannotChangeHigherRole': 'Du kan ikke ændre rollen for en bruger med en ligeværdig eller højere rolle.',
+        'userDetail.cannotPromoteSuspicious': 'En mistænkelig bruger kan ikke forfremmes til en personalerolle.',
         // Transaction Card
         'transactionCard.to': 'Til:',
         'transactionCard.from': 'Fra:',
@@ -10237,6 +10273,8 @@ const translations = {
         'userDetail.yes': 'Kyllä',
         'userDetail.no': 'Ei',
         'userDetail.inactive': 'Epäaktiivinen',
+        'userDetail.cannotChangeHigherRole': 'Et voi muuttaa käyttäjän roolia, jolla on sama tai korkeampi rooli.',
+        'userDetail.cannotPromoteSuspicious': 'Epäilyttävää käyttäjää ei voi ylentää henkilöstörooliin.',
         // Transaction Card
         'transactionCard.to': 'Vastaanottaja:',
         'transactionCard.from': 'Lähettäjä:',
@@ -10871,6 +10909,8 @@ const translations = {
         'userDetail.yes': 'Ναι',
         'userDetail.no': 'Όχι',
         'userDetail.inactive': 'Ανενεργός',
+        'userDetail.cannotChangeHigherRole': 'Δεν μπορείτε να αλλάξετε το ρόλο ενός χρήστη με ίσο ή ανώτερο ρόλο.',
+        'userDetail.cannotPromoteSuspicious': 'Ένας ύποπτος χρήστης δεν μπορεί να προαχθεί σε ρόλο προσωπικού.',
         // Transaction Card
         'transactionCard.to': 'Προς:',
         'transactionCard.from': 'Από:',
@@ -11505,6 +11545,8 @@ const translations = {
         'userDetail.yes': 'Ano',
         'userDetail.no': 'Ne',
         'userDetail.inactive': 'Neaktivní',
+        'userDetail.cannotChangeHigherRole': 'Nemůžete změnit roli uživatele se stejnou nebo vyšší rolí.',
+        'userDetail.cannotPromoteSuspicious': 'Podezřelý uživatel nemůže být povýšen na roli personálu.',
         // Transaction Card
         'transactionCard.to': 'Pro:',
         'transactionCard.from': 'Od:',
@@ -12139,6 +12181,8 @@ const translations = {
         'userDetail.yes': 'Da',
         'userDetail.no': 'Nu',
         'userDetail.inactive': 'Inactiv',
+        'userDetail.cannotChangeHigherRole': 'Nu puteți schimba rolul unui utilizator cu un rol egal sau superior.',
+        'userDetail.cannotPromoteSuspicious': 'Un utilizator suspect nu poate fi promovat la un rol de personal.',
         // Transaction Card
         'transactionCard.to': 'Către:',
         'transactionCard.from': 'De la:',
@@ -12773,6 +12817,8 @@ const translations = {
         'userDetail.yes': 'Có',
         'userDetail.no': 'Không',
         'userDetail.inactive': 'Không hoạt động',
+        'userDetail.cannotChangeHigherRole': 'Bạn không thể thay đổi vai trò của người dùng có vai trò bằng hoặc cao hơn.',
+        'userDetail.cannotPromoteSuspicious': 'Không thể thăng cấp người dùng đáng ngờ lên vai trò nhân viên.',
         // Transaction Card
         'transactionCard.to': 'Đến:',
         'transactionCard.from': 'Từ:',
@@ -13407,6 +13453,8 @@ const translations = {
         'userDetail.yes': 'ใช่',
         'userDetail.no': 'ไม่',
         'userDetail.inactive': 'ไม่ใช้งาน',
+        'userDetail.cannotChangeHigherRole': 'คุณไม่สามารถเปลี่ยนบทบาทของผู้ใช้ที่มีบทบาทเท่ากันหรือสูงกว่าได้',
+        'userDetail.cannotPromoteSuspicious': 'ไม่สามารถเลื่อนตำแหน่งผู้ใช้ที่น่าสงสัยเป็นบทบาทพนักงานได้',
         // Transaction Card
         'transactionCard.to': 'ถึง:',
         'transactionCard.from': 'จาก:',

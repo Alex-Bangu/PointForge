@@ -67,7 +67,6 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                 if (contentType && contentType.includes('application/json')) {
                     payload = await response.json();
                 } else {
-                    const text = await response.text();
                     throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
                 }
 
@@ -149,18 +148,19 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
             if (contentType && contentType.includes('application/json')) {
                 payload = await response.json();
             } else {
-                const text = await response.text();
                 throw new Error(`${t('error.serverError')}: ${response.status} ${response.statusText}`);
             }
 
             if (!response.ok) {
-                throw new Error(payload.message || payload.Message || t('error.unableToUpdateUser'));
+                const errorMessage = payload.message || payload.Message || t('error.unableToUpdateUser');
+                setSaveError(errorMessage); // Set the error state
+                throw new Error(errorMessage); // Then throw the error
             }
 
             setIsEditing(false);
             refresh();
-        } catch (err) {
-            setSaveError(err.message || t('error.unableToUpdateUser'));
+        } catch {
+            // Do nothing here like lmao there's nothing to do here
         } finally {
             setSaving(false);
         }
@@ -197,17 +197,18 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
             if (contentType && contentType.includes('application/json')) {
                 payload = await response.json();
             } else {
-                const text = await response.text();
                 throw new Error(`Server error: ${response.status} ${response.statusText}`);
             }
 
             if (!response.ok) {
-                throw new Error(payload.message || payload.Message || t('error.unableToVerifyUser'));
+                const errorMessage = payload.message || payload.Message || t('error.unableToVerifyUser');
+                setSaveError(errorMessage); // Set the error state
+                throw new Error(errorMessage); // Then throw the error
             }
 
             refresh();
-        } catch (err) {
-            setSaveError(err.message || t('error.unableToVerifyUser'));
+        } catch {
+            // Do nothing man there's nothing to do here
         } finally {
             setVerifying(false);
         }
@@ -393,27 +394,42 @@ function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }) {
                                             <label className="role-label">
                                                 {t('userDetail.role')}
                                             </label>
-                                            <select
-                                                value={editForm.role}
-                                                onChange={(e) =>
-                                                    setEditForm((prev) => ({
-                                                        ...prev,
-                                                        role: e.target.value
-                                                    }))
-                                                }
-                                            >
-                                                <option value="regular">{t('users.roleRegular')}</option>
-                                                <option value="cashier">{t('users.roleCashier')}</option>
-                                                {currentUser?.role === 'superuser' && (
-                                                    <>
-                                                        <option value="manager">{t('users.roleManager')}</option>
-                                                        <option value="superuser">{t('users.roleSuperuser')}</option>
-                                                    </>
-                                                )}
-                                                {currentUser?.role === 'manager' && (
-                                                    <option value="manager">{t('users.roleManager')}</option>
-                                                )}
-                                            </select>
+                                            {user.suspicious ? (
+                                                <p className="role-message">
+                                                    {t('userDetail.cannotPromoteSuspicious')}
+                                                </p>
+                                            ) : currentUser.role === 'manager' && (user.role === 'manager' || user.role === 'superuser') ? (
+                                                <p className="role-message">
+                                                    {t('userDetail.cannotChangeHigherRole')}
+                                                </p>
+                                            ) : (
+                                                <select
+                                                    value={editForm.role}
+                                                    onChange={(e) =>
+                                                        setEditForm((prev) => ({
+                                                            ...prev,
+                                                            role: e.target.value
+                                                        }))
+                                                    }
+                                                >
+                                                    {/* Superusers can assign any role */}
+                                                    {currentUser?.role === 'superuser' && (
+                                                        <>
+                                                            <option value="regular">{t('users.roleRegular')}</option>
+                                                            <option value="cashier">{t('users.roleCashier')}</option>
+                                                            <option value="manager">{t('users.roleManager')}</option>
+                                                            <option value="superuser">{t('users.roleSuperuser')}</option>
+                                                        </>
+                                                    )}
+                                                    {/* Managers can only assign regular or cashier roles */}
+                                                    {currentUser?.role === 'manager' && (
+                                                        <>
+                                                            <option value="regular">{t('users.roleRegular')}</option>
+                                                            <option value="cashier">{t('users.roleCashier')}</option>
+                                                        </>
+                                                    )}
+                                                </select>
+                                            )}
                                         </div>
                                     </div>
 
