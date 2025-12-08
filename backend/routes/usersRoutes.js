@@ -895,7 +895,8 @@ router.post('/:userId/transactions', auth, async (req, res) => {
             remark: remark,
             issuer: {connect: {id: req.auth.id }},
             receiver: {connect: {id: receiver.id}},
-            createdBy: req.auth.utorid
+            createdBy: req.auth.utorid,
+            relatedId: req.auth.id,
         }
     });
     const transaction2 = await prisma.transaction.create({
@@ -906,7 +907,8 @@ router.post('/:userId/transactions', auth, async (req, res) => {
             remark: remark,
             issuer: {connect: {id: req.auth.id }},
             receiver: {connect: {id: receiver.id}},
-            createdBy: req.auth.utorid
+            createdBy: req.auth.utorid,
+            relatedId: receiver.id
         }
     });
 
