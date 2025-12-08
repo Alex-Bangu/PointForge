@@ -64,10 +64,10 @@ function Transaction({transaction, onDetailClick}) {
             break;
         case 'transfer':
             // For transfers, API returns sender, recipient, and sent (positive amount)
-            const transferAmount = transaction.sent || Math.abs(transaction.amount || 0);
+            const transferAmount = transaction.sent || Math.abs(transaction.sent || 0);
             
             // Check if this is an outgoing (sent) or incoming (received) transfer
-            const isIncoming = transaction.amount > 0;
+            const isIncoming = transaction.sent > 0;
             if (isIncoming && transaction.sender) {
                 // Received transfer
                 pointsString = t('transactionCard.pointsPlus') + String(transferAmount) + " " + t('transactionCard.points');

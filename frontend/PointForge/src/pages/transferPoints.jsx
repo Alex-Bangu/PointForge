@@ -117,11 +117,10 @@ function TransferPoints() {
         
         setLoading(true);
         try {
-            const response = await authenticatedFetch('/transactions', {
+            const response = await authenticatedFetch(`/users/${receiver.id}/transactions`, {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'transfer',
-                    receiverUtorid: receiver.utorid.trim(),
                     amount: amountNum,
                     remark: remark.trim() || ''
                 })
