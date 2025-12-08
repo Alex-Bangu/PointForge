@@ -11,7 +11,7 @@
  */
 
 import { useContext, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext.jsx';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
 import {
@@ -29,6 +29,7 @@ const PAGE_SIZE = 10;
 function Transactions() {
     const { user } = useContext(UserContext);
     const { t } = useLanguage();
+    const navigate = useNavigate();
     const isManager = user?.role === 'manager' || user?.role === 'superuser';
     
     const [searchParams, setSearchParams] = useSearchParams();
@@ -307,6 +308,14 @@ function Transactions() {
                     <h1>{t('transactions.title')}</h1>
                     <p>{isManager ? t('transactions.subtitleManager') : t('transactions.subtitleRegular')}</p>
                 </div>
+                {isManager && (
+                    <button 
+                        className="create-adjustment-btn"
+                        onClick={() => navigate('/dashboard/manager/create-adjustment')}
+                    >
+                        Create Adjustment
+                    </button>
+                )}
             </div>
 
             {/* Filter and Sort panel */}

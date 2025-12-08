@@ -40,6 +40,23 @@
     color: #b0b0b0;
 }
 
+.create-adjustment-btn {
+    background-color: #B8860B;
+    color: #014530;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.create-adjustment-btn:hover {
+    background-color: #d4a017;
+}
+
 .filters-panel {
     background: #014530;
     border-radius: 16px;
@@ -297,6 +314,16 @@
     .filters-panel input,
     .filters-panel select {
         width: 100%;
+    }
+
+    .transactions-page .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .create-adjustment-btn {
+        width: 100%;
+        margin-top: 1rem;
     }
 
 }
