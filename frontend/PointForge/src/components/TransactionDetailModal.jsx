@@ -178,7 +178,7 @@ function TransactionDetailModal({ transactionId, isOpen, onClose }) {
                                         </div>
                                         <div className="transaction-detail-item">
                                             <span>{t('transactionDetail.recipient')}</span>
-                                            <strong>{transaction.recipient || transaction.utorid || t('common.n/a')}</strong>
+                                            <strong>{transaction.issuer || transaction.utorid || t('common.n/a')}</strong>
                                         </div>
                                         <div className="transaction-detail-item">
                                             <span>{t('transactionDetail.amount')}</span>
