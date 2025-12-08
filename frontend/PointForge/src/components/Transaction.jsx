@@ -74,7 +74,7 @@ function Transaction({transaction, onDetailClick}) {
                 utoridDisplay = `${t('transactionCard.from')} ${transaction.sender}`;
             } else if (transaction.recipient) {
                 // Sent transfer
-                pointsString = t('transactionCard.pointsMinus') + String(transferAmount) + " " + t('transactionCard.points');
+                pointsString = String(transferAmount) + " " + t('transactionCard.points');
                 utoridDisplay = `${t('transactionCard.to')} ${transaction.recipient}`;
             } else {
                 // Fallback
